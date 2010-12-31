@@ -1,12 +1,27 @@
 .gridContainer {
     border: 1px solid #ccc;
     border-width: 1px 0 0 1px;
+    float: left;
 }
 
 .gridCell {
     border: 1px solid #ccc;
     border-width: 0 1px 1px 0;
     float: left;
+}
+
+.cluesContainer {
+    float: left;
+}
+
+.acrossCluesContainer {
+    padding: 10px;
+    float: left;
+}
+
+.downCluesContainer {
+    padding: 10px;
+    float: right;
 }
 
 .black {
