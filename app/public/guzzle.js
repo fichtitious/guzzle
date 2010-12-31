@@ -1,4 +1,5 @@
 $(function() {
+
     $('#newPuzzleButton').click(function() {
         $.post('newPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
             function (puzzle) {
@@ -7,6 +8,11 @@ $(function() {
             }
         );
     });
+
+    $('.clueNumber').live('hover', function(event) {
+        $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
+    });
+
 });
 
 function redraw(puzzle) {
@@ -29,7 +35,7 @@ function redraw(puzzle) {
                 { width : 39,
                   height : 39,
                   class : 'gridCell',
-                  id : rowIdx + ',' + colIdx
+                  id : 'cell' + rowIdx + '-' + colIdx
                 }).appendTo(gridContainer);
 
             var cell = puzzle.grid[rowIdx][colIdx];
@@ -61,8 +67,13 @@ function redraw(puzzle) {
             return cellAt(puzzle, slotA).number > cellAt(puzzle, slotB).number ? 1 : -1;
         }).forEach(function (slot) {
             if (slot.isAcross == isAcross) {
-                var wordNumber = cellAt(puzzle, slot).number;
-                $('<div />', {text : wordNumber}).appendTo(container);
+                var clue = $('<div />').appendTo(container);
+                var cell = cellAt(puzzle, slot);
+                $('<span />',
+                  { text : cell.number,
+                    class : 'clueNumber'
+                  }).appendTo(clue)
+                        .data('gridCellId', 'cell' + slot.startCoord[0] + '-' + slot.startCoord[1]);
             }
         });
     });
