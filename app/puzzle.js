@@ -2,7 +2,7 @@ exports.Puzzle = Puzzle;
 
 var _ = require('./public/lib/underscore-min');
 
-function Puzzle(size) {
+function Puzzle (size) {
     this.size = size;
     this.numAttemptsToGenerate = 0;
     while (true) {
@@ -36,7 +36,6 @@ function Cell () {
 function createGrid (size) {
 
     var grid = new Array(size);
-
     for (rowIdx = 0; rowIdx < size; rowIdx++) {
         grid[rowIdx] = new Array(size);
         for (colIdx = 0; colIdx < size; colIdx++) {
