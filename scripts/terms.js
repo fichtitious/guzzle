@@ -1,6 +1,7 @@
 exports.extractTerms = extractTerms;
 
 var _ = require('../app/public/lib/underscore-min'),
+    assert = require('assert'),
     MIN_TERM_LENGTH = 3;
 
 function extractTerms (phrase) {
@@ -34,7 +35,7 @@ function extractTerms (phrase) {
 
 }
 
-function testExtractTerms () {
+(function () {
 
     [['Jack', ['JACK']],
      ['Jack_Abramoff_Indian_lobbying_scandal', ['JACKABRAMOFFINDIANLOBBYINGSCANDAL', 'JACK', 'ABRAMOFF', 'INDIAN', 'LOBBYING', 'SCANDAL']],
@@ -49,17 +50,17 @@ function testExtractTerms () {
      ['!Xóõ', []],
      ['Dokić', []]
     ].forEach(function () {
+
         var phrase = arguments[0][0];
         var expectedTerms = arguments[0][1];
         var actualTerms = extractTerms(phrase);
-        console.log(phrase + ' -> ' + actualTerms);
-        if (!_.isEqual(expectedTerms, actualTerms)) {
-            throw 'expected ' + expectedTerms;
+
+        if (module.parent === undefined) {
+            console.log(phrase + ' -> ' + actualTerms);
         }
+
+        assert.deepEqual(actualTerms, expectedTerms);
+
     });
 
-}
-
-if (module.parent === undefined) {
-    testExtractTerms();
-}
+})();
