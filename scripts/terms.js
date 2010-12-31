@@ -32,13 +32,15 @@ function extractTerms (phrase) {
 }
 
 function testExtractTerms () {
-    [['Dog', ['DOG']],
+
+    [['Jack', ['JACK']],
+     ['Jack_Abramoff_Indian_lobbying_scandal', ['JACKABRAMOFFINDIANLOBBYINGSCANDAL', 'JACK', 'ABRAMOFF', 'INDIAN', 'LOBBYING', 'SCANDAL']],
      ['Tom Tom', ['TOMTOM', 'TOM']],
      ['Tom-Tom', ['TOMTOM', 'TOM']],
      ['Star69', ['STAR']],
      ['(1047)_Geisha', ['GEISHA']],
-     ['Dojo_kun', ['DOJOKUN', 'DOJO', 'KUN']],
      ["'Abd_Allah_Ibn_Mas'ud", ['ABDALLAHIBNMASUD', 'ABD', 'ALLAH', 'IBN', 'MAS', 'UD']],
+     ['Dojo_kun', ['DOJOKUN', 'DOJO', 'KUN']],
      ['Doktor-Julius-Leber-Straße', ['DOKTORJULIUSLEBERSTRASSE', 'DOKTOR', 'JULIUS', 'LEBER', 'STRASSE']],
      ['Doktor_Schiwago_(1965)', ['DOKTORSCHIWAGO', 'DOKTOR', 'SCHIWAGO']],
      ['!Xóõ', []],
@@ -52,6 +54,7 @@ function testExtractTerms () {
             throw 'expected ' + expectedTerms;
         }
     });
+
 }
 
 if (module.parent === undefined) {
