@@ -1,7 +1,5 @@
 exports.Puzzle = Puzzle;
 
-var BLACK = 0;
-
 function Puzzle(size) {
     this.size = size;
     this.numAttemptsToGenerate = 0;
@@ -10,6 +8,7 @@ function Puzzle(size) {
         var grid = createGrid(size);
         var slots = findSlots(grid, size);
         if ( isValid(grid, slots, size) ) {
+            addWordNumbering(grid, slots, size);
             this.grid = grid;
             this.slots = slots;
             break;
@@ -27,6 +26,11 @@ function Slot (startCoord, size, isAcross) {
     this.isDown = !isAcross;
 }
 
+function Cell () {
+    this.isBlack = false;
+    this.number = null;
+}
+
 function createGrid (size) {
 
     var grid = new Array(size);
@@ -34,7 +38,7 @@ function createGrid (size) {
     for (rowIdx = 0; rowIdx < size; rowIdx++) {
         grid[rowIdx] = new Array(size);
         for (colIdx = 0; colIdx < size; colIdx++) {
-            grid[rowIdx][colIdx] = 1;
+            grid[rowIdx][colIdx] = new Cell();
         }
     }
 
@@ -43,11 +47,11 @@ function createGrid (size) {
     while (numRemainingBlackCellsToAdd > 1) {
         var rowIdx = Math.floor(Math.random() * size);
         var colIdx = Math.floor(Math.random() * size);
-        if (grid[rowIdx][colIdx] != 0) {                                       // make this random cell black, if it's not already, and do the same
-            grid[rowIdx][colIdx] = grid[size-rowIdx-1][size-colIdx-1] = BLACK; // to its rotational inverse so that we get a symmetrical grid
-            if (numRemainingRetries > 0 && findSlots(grid, size).filter(function(slot) {return slot.size <= 2}).length != 0) {
-                grid[rowIdx][colIdx] = grid[size-rowIdx-1][size-colIdx-1] = 1; // optimization: allow an immediate do-over if this last change
-                numRemainingRetries--;                                         // would result in an invalid puzzle
+        if (!grid[rowIdx][colIdx].isBlack) { // make this random cell black, if it's not already, and do the same to its rotational
+            grid[rowIdx][colIdx].isBlack = grid[size-rowIdx-1][size-colIdx-1].isBlack = true; // inverse so that we get a symmetrical grid
+            if (numRemainingRetries > 0 && containsShortSlots(findSlots(grid, size))) {
+                grid[rowIdx][colIdx].isBlack = grid[size-rowIdx-1][size-colIdx-1].isBlack = false;
+                numRemainingRetries--; // optimization: allow an immediate do-over if this last change would result in an invalid puzzle
             } else {
                 numRemainingBlackCellsToAdd -= 2;
             }
@@ -70,7 +74,7 @@ function findSlots (grid, size) {
                 var rowIdx = isAcross ? staticIdx : movingIdx;
                 var colIdx = isAcross ? movingIdx : staticIdx;
                 var movingCoordinate = isAcross ? 1 : 0;
-                var thisCellIsNonBlack = grid[rowIdx][colIdx] !== BLACK;
+                var thisCellIsNonBlack = !grid[rowIdx][colIdx].isBlack;
                 var thisCellIsTerminal = movingIdx + 1 == size;
                 if (lastCellWasNonBlack) {
                     if (thisCellIsNonBlack) {
@@ -98,8 +102,7 @@ function findSlots (grid, size) {
 function isValid (grid, slots, size) {
 
     // puzzle shouldn't contain any too-short slots
-    var tooShortSlots = slots.filter(function(slot) {return slot.size <= 2});
-    if (tooShortSlots.length != 0) {
+    if (containsShortSlots(slots)) {
         console.log('rejecting puzzle because it contains too-short slots');
         return false;
     }
@@ -114,12 +117,36 @@ function isValid (grid, slots, size) {
     }
 
     // first cell shouldn't be black
-    if (grid[0][0] === BLACK) {
+    if (grid[0][0].isBlack) {
         console.log('rejecting puzzle because first cell is black');
         return false;
     }
 
     // everything fine
     return true;
+
+}
+
+function containsShortSlots(slots) {
+    return slots.filter(function(slot) {return slot.size <= 2}).length != 0;
+}
+
+function addWordNumbering (grid, slots, size) {
+
+    var wordNumber = 1;
+    for (rowIdx = 0; rowIdx < size; rowIdx++) {
+        for (colIdx = 0; colIdx < size; colIdx++) {
+            var cell = grid[rowIdx][colIdx];
+            if (cell.number === null && aWordStartsAt(rowIdx, colIdx)) {
+                cell.number = wordNumber++;
+            }
+        }
+    }
+
+    function aWordStartsAt(rowIdx, colIdx) {
+        return slots.filter(function(slot) {
+            return slot.startCoord[0] == rowIdx && slot.startCoord[1] == colIdx;
+        }).length != 0;
+    }
 
 }
