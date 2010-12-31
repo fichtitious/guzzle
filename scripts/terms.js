@@ -1,6 +1,7 @@
 exports.extractTerms = extractTerms;
 
-var _ = require('../app/public/lib/underscore-min');
+var _ = require('../app/public/lib/underscore-min'),
+    MIN_TERM_LENGTH = 3;
 
 function extractTerms (phrase) {
 
@@ -22,12 +23,14 @@ function extractTerms (phrase) {
                         .filter(function (term) {
                             return term.split('').every(function (letter) {
                                 return letter >= 'A' && letter <= 'Z';
-                            })
+                            });
                         });
 
-    return terms.length > 1 ?
-        [terms.join('')].concat(_.uniq(terms))
-        : _.uniq(terms);
+    if (terms.length > 1) {
+        terms = [terms.join('')].concat(terms);
+    }
+
+    return _.uniq(terms).filter(function (term) {return term.length >= MIN_TERM_LENGTH});
 
 }
 
@@ -39,7 +42,7 @@ function testExtractTerms () {
      ['Tom-Tom', ['TOMTOM', 'TOM']],
      ['Star69', ['STAR']],
      ['(1047)_Geisha', ['GEISHA']],
-     ["'Abd_Allah_Ibn_Mas'ud", ['ABDALLAHIBNMASUD', 'ABD', 'ALLAH', 'IBN', 'MAS', 'UD']],
+     ["'Abd_Allah_Ibn_Mas'ud", ['ABDALLAHIBNMASUD', 'ABD', 'ALLAH', 'IBN', 'MAS']],
      ['Dojo_kun', ['DOJOKUN', 'DOJO', 'KUN']],
      ['Doktor-Julius-Leber-Straße', ['DOKTORJULIUSLEBERSTRASSE', 'DOKTOR', 'JULIUS', 'LEBER', 'STRASSE']],
      ['Doktor_Schiwago_(1965)', ['DOKTORSCHIWAGO', 'DOKTOR', 'SCHIWAGO']],
