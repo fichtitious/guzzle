@@ -1,5 +1,7 @@
 exports.Puzzle = Puzzle;
 
+var _ = require('./public/lib/underscore-min');
+
 function Puzzle(size) {
     this.size = size;
     this.numAttemptsToGenerate = 0;
@@ -7,7 +9,7 @@ function Puzzle(size) {
         this.numAttemptsToGenerate++;
         var grid = createGrid(size);
         var slots = findSlots(grid, size);
-        if ( isValid(grid, slots, size) ) {
+        if (isValid(grid, slots, size)) {
             addWordNumbering(grid, slots, size);
             this.grid = grid;
             this.slots = slots;
@@ -128,7 +130,9 @@ function isValid (grid, slots, size) {
 }
 
 function containsShortSlots(slots) {
-    return slots.filter(function(slot) {return slot.size <= 2}).length != 0;
+    return slots.some(function(slot) {
+        return slot.size <= 2
+    });
 }
 
 function addWordNumbering (grid, slots, size) {
@@ -144,9 +148,9 @@ function addWordNumbering (grid, slots, size) {
     }
 
     function aWordStartsAt(rowIdx, colIdx) {
-        return slots.filter(function(slot) {
-            return slot.startCoord[0] == rowIdx && slot.startCoord[1] == colIdx;
-        }).length != 0;
+        return slots.some(function(slot) {
+            return _.isEqual(slot.startCoord, [rowIdx,colIdx]);
+        });
     }
 
 }
