@@ -19,7 +19,8 @@ function createdb (csvpath) {
             }
             client.query("BEGIN; CREATE TEMP TABLE temp_word as SELECT * from words.word WHERE 1 = 0;" +
                          "COPY temp_word FROM '" + csvpath + "' CSV;" +
-                         "INSERT INTO words.word (SELECT DISTINCT word, len FROM temp_word); COMMIT;", function (error) {
+                         "INSERT INTO words.word (SELECT DISTINCT word, len FROM temp_word); COMMIT;" +
+                         "CREATE INDEX len_idx ON words.word (len);", function (error) {
                 if (error) {
                     console.log(error);
                     throw error;

@@ -1,6 +1,6 @@
 $(function() {
 
-    $('#newPuzzleButton').click(function() {
+    $('#newPuzzleButton').click(function () {
         $.post('newPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
             function (puzzle) {
                 $('#puzzleGenerationAttempts').text('It took ' + puzzle.numAttemptsToGenerate + ' attempts to generate this valid puzzle.');
@@ -9,8 +9,14 @@ $(function() {
         );
     });
 
-    $('.clueNumber').live('hover', function(event) {
+    $('.clueNumber').live('hover', function (event) {
         $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
+    });
+
+    $('#testWordButton').click(function () {
+        $.post('/testWord', {'len' : $('#testWordLen').val()}, function (res) {
+            $('#testWord').text(res.word);
+        });
     });
 
 });
