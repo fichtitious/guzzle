@@ -13,9 +13,7 @@ Dependencies
 
   * [node.js](http://nodejs.org/#download)
   * [express.js](http://expressjs.com/install.sh)
-  * sqlite3
-  * libsqlite3-dev
-  * node-sqlite (roll with the binaries already in app/lib/sqlite or re-build them from [source](http://github.com/orlandov/node-sqlite))
+  * [node-postgres](https://github.com/brianc/node-postgres)
 
 Todo
 ----
