@@ -1,10 +1,18 @@
 exports.Puzzle = Puzzle;
+exports.withWords = withWords;
 
-var _ = require('./public/lib/underscore-min');
+var _ = require('./public/lib/underscore-min'),
+    wordservice = require('./wordservice');
+
+function withWords (puzzle, callback) {
+    fillInWords(puzzle, getCellsNeedingLetters(puzzle.grid, puzzle.size), callback);
+}
 
 function Puzzle (size) {
+
     this.size = size;
     this.numAttemptsToGenerate = 0;
+
     while (true) {
         this.numAttemptsToGenerate++;
         var grid = createGrid(size);
@@ -15,21 +23,56 @@ function Puzzle (size) {
             this.slots = slots;
             break;
         } else if (this.numAttemptsToGenerate > 200) {
-            this.numAttemptsToGenerate = "too many!";
             break;
         }
     }
+
 }
 
 function Slot (startCoord, size, isAcross) {
+
     this.startCoord = startCoord;
     this.size = size;
     this.isAcross = isAcross;
     this.isDown = !isAcross;
+
+    this.coords = [];
+    for (i = 0; i < this.size; i++) {
+        this.coords.push([this.startCoord[0] + (this.isAcross ? 0 : i),
+                          this.startCoord[1] + (this.isAcross ? i : 0)]);
+    }
+
+    this.indexOfCell = function (cell) {
+        for (i = 0; i < this.size; i++) {
+            if (_.isEqual([cell.rowIdx, cell.colIdx], this.coords[i])) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    this.getQueryPattern = function (grid) {
+        return this.coords.map(function (coord) {
+            var cell = grid[coord[0]][coord[1]];
+            return cell.letter === null ? '_' : cell.letter;
+        }).join('');
+    };
+
+    this.fillIn = function (word, grid) {
+        var letters = word.split('');
+        for (i = 0; i < this.size; i++) {
+            var coord = this.coords[i];
+            grid[coord[0]][coord[1]].letter = letters[i];
+        }
+    };
+
 }
 
-function Cell () {
+function Cell (rowIdx, colIdx) {
+    this.rowIdx = rowIdx;
+    this.colIdx = colIdx;
     this.isBlack = false;
+    this.letter = null;
     this.number = null;
 }
 
@@ -39,7 +82,7 @@ function createGrid (size) {
     for (rowIdx = 0; rowIdx < size; rowIdx++) {
         grid[rowIdx] = new Array(size);
         for (colIdx = 0; colIdx < size; colIdx++) {
-            grid[rowIdx][colIdx] = new Cell();
+            grid[rowIdx][colIdx] = new Cell(rowIdx, colIdx);
         }
     }
 
@@ -150,6 +193,61 @@ function addWordNumbering (grid, slots, size) {
         return slots.some(function(slot) {
             return _.isEqual(slot.startCoord, [rowIdx,colIdx]);
         });
+    }
+
+}
+
+function getCellsNeedingLetters (grid, size) {
+
+    var cells = [];
+    for (rowIdx = 0; rowIdx < size; rowIdx++) {
+        for (colIdx = 0; colIdx < size; colIdx++) {
+            cells.push(grid[rowIdx][colIdx]);
+        }
+    }
+
+    return cells.filter(function (cell) {
+        return cell.letter === null & !cell.isBlack;
+    });
+
+}
+
+function getSlotContainingCell (slots, cell, isAcross) {
+
+    return slots.filter(function (slot) {
+        return (slot.isAcross == isAcross) && (slot.indexOfCell(cell) != -1);
+    })[0];
+
+}
+
+function fillInWords (puzzle, cellsNeedingLetters, callback) {
+
+    if (cellsNeedingLetters.length > 0) {
+
+        var cell = cellsNeedingLetters[Math.floor(Math.random()*cellsNeedingLetters.length)];
+
+        var slotAcross = getSlotContainingCell (puzzle.slots, cell, true);
+        var slotDown = getSlotContainingCell (puzzle.slots, cell, false);
+        var patternAcross = slotAcross.getQueryPattern(puzzle.grid);
+        var patternDown = slotDown.getQueryPattern(puzzle.grid);
+        var intersectIdxAcross = slotAcross.indexOfCell(cell);
+        var intersectIdxDown = slotDown.indexOfCell(cell);
+
+        wordservice.matchWords(patternAcross, patternDown, intersectIdxAcross, intersectIdxDown, false /*randomize*/, function (wordA, wordB) {
+            if (wordA === '') {
+                console.log('dead end, starting over');
+                puzzle = new Puzzle(puzzle.size);
+            } else {
+                console.log('matchWords() returned ' + wordA + ' and ' + wordB);
+                slotAcross.fillIn(wordA, puzzle.grid);
+                slotDown.fillIn(wordB, puzzle.grid);
+            }
+            fillInWords(puzzle, getCellsNeedingLetters(puzzle.grid, puzzle.size), callback);
+
+        });
+
+    } else {
+        return callback(puzzle);
     }
 
 }

@@ -1,10 +1,17 @@
 $(function() {
 
-    $('#newPuzzleButton').click(function () {
-        $.post('newPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
-            function (puzzle) {
-                $('#puzzleGenerationAttempts').text('It took ' + puzzle.numAttemptsToGenerate + ' attempts to generate this valid puzzle.');
-                redrawPuzzle(puzzle);
+    $('#newFullPuzzleButton').click(function () {
+        $.post('newFullPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
+            function (res) {
+                redrawPuzzle(res.puzzle);
+            }
+        );
+    });
+
+    $('#newEmptyPuzzleButton').click(function () {
+        $.post('newEmptyPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
+            function (res) {
+                redrawPuzzle(res.puzzle);
             }
         );
     });
@@ -13,9 +20,20 @@ $(function() {
         $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
     });
 
-    $('#testWordButton').click(function () {
-        $.post('/testWord', {'len' : $('#testWordLen').val()}, function (res) {
-            $('#testWord').text(res.word);
+    $('#randomWordButton').click(function () {
+        $.post('/randomWord', {'len' : $('#randomWordLen').val()}, function (res) {
+            $('#randomWord').text(res.word);
+        });
+    });
+
+    $('#matchWordsButton').click(function () {
+        $.post('/matchWords', { 'patternA' : $('#patternA').val(),
+                                'patternB' : $('#patternB').val(),
+                                'intersectIdxA' : $('#intersectIdxA').val(),
+                                'intersectIdxB' : $('#intersectIdxB').val()
+                              }, function (res) {
+            $('#wordA').text(res.wordA);
+            $('#wordB').text(res.wordB);
         });
     });
 
@@ -59,8 +77,8 @@ function redrawPuzzle(puzzle) {
                 var cell = puzzle.grid[rowIdx][colIdx];
                 if (cell.isBlack) {
                     gridCell.addClass('black');
-                } else if (cell.number !== null) {
-                    gridCell.text(cell.number);
+                } else {
+                    gridCell.text((cell.number === null ? '' : cell.number + ' ') + (cell.letter === null ? '' : cell.letter));
                 }
             }
         }
