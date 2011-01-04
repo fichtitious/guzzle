@@ -2,7 +2,7 @@ exports.Puzzle = Puzzle;
 exports.withWords = withWords;
 
 var _ = require('./public/lib/underscore-min'),
-    wordservice = require('./wordservice');
+    wordservice = require('./wordserviceoneacross');
 
 function withWords (puzzle, callback) {
     fillInWords(puzzle, getCellsNeedingLetters(puzzle.grid, puzzle.size), callback);
@@ -243,7 +243,6 @@ function fillInWords (puzzle, cellsNeedingLetters, callback) {
                 slotDown.fillIn(wordB, puzzle.grid);
             }
             fillInWords(puzzle, getCellsNeedingLetters(puzzle.grid, puzzle.size), callback);
-
         });
 
     } else {

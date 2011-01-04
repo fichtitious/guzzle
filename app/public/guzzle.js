@@ -1,6 +1,8 @@
 $(function() {
 
     $('#newFullPuzzleButton').click(function () {
+        $('#puzzleContainer').remove();
+        $('<div />', {id : 'puzzleContainer', text : 'one sec...'}).appendTo('body');
         $.post('newFullPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
             function (res) {
                 redrawPuzzle(res.puzzle);
