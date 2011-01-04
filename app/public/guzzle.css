@@ -10,6 +10,17 @@
     float: left;
 }
 
+.gridNumber {
+    font-size: 0.8em;
+    float: left;
+}
+
+.gridLetter {
+    font-size: 1.2em;
+    padding-left: 4px;
+    float: center;
+}
+
 .cluesContainer {
     float: left;
 }

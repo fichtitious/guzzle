@@ -80,7 +80,14 @@ function redrawPuzzle(puzzle) {
                 if (cell.isBlack) {
                     gridCell.addClass('black');
                 } else {
-                    gridCell.text((cell.number === null ? '' : cell.number + ' ') + (cell.letter === null ? '' : cell.letter));
+                    $('<span />',
+                      { text : cell.number === null ? '' : cell.number,
+                        class : 'gridNumber'
+                      }).appendTo(gridCell);
+                    $('<span />',
+                      { text : cell.letter === null ? '' : cell.letter,
+                        class : 'gridLetter'
+                      }).appendTo(gridCell);
                 }
             }
         }
