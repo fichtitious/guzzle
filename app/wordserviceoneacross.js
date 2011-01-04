@@ -58,24 +58,27 @@ function matchWord (pattern, callback) {
 
 function matchWordLive (pattern, callback) {
 
-    var request = http.createClient(80, 'www.oneacross.com').request('GET',
-        '/cgi-bin/search_banner.cgi?p0=' + escapeWildcards(pattern), {'host' : 'www.oneacross.com'});
-    request.end();
-    request.on('response', function (response) {
-        response.setEncoding('utf8');
-        var body = '';
-        response.on('data', function (chunk) {body += chunk});
-        response.on('end', function () {
-            var matches = body.match(/\?w=.*?&/g);
-            if (matches !== null) {
+    try {
+        var request = http.createClient(80, 'www.oneacross.com').request('GET',
+            '/cgi-bin/search_banner.cgi?p0=' + escapeWildcards(pattern), {'host' : 'www.oneacross.com'});
+        request.end();
+        request.on('response', function (response) {
+            response.setEncoding('utf8');
+            var body = '';
+            response.on('data', function (chunk) {body += chunk});
+            response.on('end', function () {
+                var matches = body.match(/\?w=.*?&/g) || [];
                 matches = matches.map(function (candidate) {
                     return candidate.substring(3, candidate.length-1);
                 }).filter(function (candidate) {return matchesPattern (candidate, pattern)});
                 cacheMatches(pattern, matches);
-            }
-            callback(matches);
+                callback(matches);
+            });
         });
-    });
+    } catch (error) {
+        console.log(error);
+        callback([]);
+    }
 
 }
 
