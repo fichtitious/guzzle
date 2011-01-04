@@ -63,17 +63,34 @@ function matchWordLive (pattern, callback) {
             '/cgi-bin/search_banner.cgi?p0=' + escapeWildcards(pattern), {'host' : 'www.oneacross.com'});
         request.end();
         request.on('response', function (response) {
-            response.setEncoding('utf8');
-            var body = '';
-            response.on('data', function (chunk) {body += chunk});
-            response.on('end', function () {
-                var matches = body.match(/\?w=.*?&/g) || [];
-                matches = matches.map(function (candidate) {
-                    return candidate.substring(3, candidate.length-1);
-                }).filter(function (candidate) {return matchesPattern (candidate, pattern)});
-                cacheMatches(pattern, matches);
-                callback(matches);
-            });
+            try {
+                response.setEncoding('utf8');
+                var body = '';
+                response.on('data', function (chunk) {
+                    try {
+                        body += chunk
+                    } catch (error) {
+                        console.log(error);
+                        callback([]);
+                    }
+                });
+                response.on('end', function () {
+                    try {
+                        var matches = body.match(/\?w=.*?&/g) || [];
+                        matches = matches.map(function (candidate) {
+                            return candidate.substring(3, candidate.length-1);
+                        }).filter(function (candidate) {return matchesPattern (candidate, pattern)});
+                        cacheMatches(pattern, matches);
+                        callback(matches);
+                    } catch (error) {
+                        console.log(error);
+                        callback([]);
+                    }
+                });
+            } catch (error) {
+                console.log(error);
+                callback([]);
+            }
         });
     } catch (error) {
         console.log(error);
