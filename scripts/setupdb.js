@@ -33,6 +33,33 @@ function createdb (csvpath) {
 
 }
 
+function createOneAcrossCacheTable () {
+
+    pg.connect('pg://guzzle@localhost:5432/guzzle', function (error, client) {
+
+        if (error) {
+            throw error;
+        }
+
+        client.on('drain', client.end.bind(client));
+
+        client.query("CREATE TABLE words.oneacrosscache ( pattern VARCHAR, match VARCHAR )", function (error) {
+            if (error && error.message != 'relation "word" already exists') {
+                throw error;
+            }
+            client.query("CREATE INDEX pattern_idx ON words.oneacrosscache (pattern);", function (error) {
+                if (error) {
+                    console.log(error);
+                    throw error;
+                }
+            });
+
+        });
+
+    });
+
+}
+
 function writecsv (srcname, csvname) {
 
     var csv = fs.openSync(csvname, 'w');
@@ -50,6 +77,7 @@ function writecsv (srcname, csvname) {
 }
 
 if (module.parent === undefined) {
-    writecsv('src.raw', 'src.csv');
-    createdb('/home/dan/dev/guzzle/src.csv');
+    //writecsv('src.raw', 'src.csv');
+    //createdb('/home/dan/dev/guzzle/src.csv');
+    createOneAcrossCacheTable();
 }

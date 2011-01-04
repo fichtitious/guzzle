@@ -1,7 +1,9 @@
 exports.randomWord = randomWord;
 exports.matchWords = matchWords;
 
-var http = require('http');
+var http = require('http'),
+    pg = require('pg'),
+    dburl = 'pg://guzzle@localhost:5432/guzzle';
 
 function randomWord (len, callback) {
     var pattern = new Array(parseInt(len)+1).join('_');
@@ -34,7 +36,28 @@ function matchWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize
 }
 
 function matchWord (pattern, callback) {
+
     pattern = pattern.toUpperCase();
+
+    pg.connect(dburl, function (error, client) {
+        client.query('SELECT match FROM words.oneacrosscache WHERE pattern = $1 ORDER BY random()', [pattern], function (error, result) {
+            if (error) {
+                return callback(error);
+            }
+            if (result.rows.length !== 0) {
+                console.log('cache hit for ' + pattern);
+                return callback(result.rows.map(function (row) {return row.match}));
+            } else {
+                console.log('cache miss for ' + pattern);
+                matchWordLive(pattern, callback);
+            }
+        });
+    });
+
+}
+
+function matchWordLive (pattern, callback) {
+
     var request = http.createClient(80, 'www.oneacross.com').request('GET',
         '/cgi-bin/search_banner.cgi?p0=' + escapeWildcards(pattern), {'host' : 'www.oneacross.com'});
     request.end();
@@ -44,15 +67,28 @@ function matchWord (pattern, callback) {
         response.on('data', function (chunk) {body += chunk});
         response.on('end', function () {
             var matches = body.match(/\?w=.*?&/g);
-            console.log('matches for pattern: ' + matches);
             if (matches !== null) {
                 matches = matches.map(function (candidate) {
                     return candidate.substring(3, candidate.length-1);
                 }).filter(function (candidate) {return matchesPattern (candidate, pattern)});
+                cacheMatches(pattern, matches);
             }
             callback(matches);
         });
     });
+
+}
+
+function cacheMatches (pattern, matches) {
+
+    console.log('caching matches for ' + pattern + ': ' + matches);
+
+    matches.forEach(function (m) {
+        pg.connect(dburl, function (error, client) {
+            client.query('INSERT INTO words.oneacrosscache (pattern, match) VALUES ($1, $2)', [pattern, m], function () {});
+        });
+    });
+
 }
 
 function escapeWildcards (pattern) {
