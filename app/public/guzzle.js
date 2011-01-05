@@ -22,9 +22,9 @@ $(function() {
         $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
     });
 
-    $('#randomWordButton').click(function () {
-        $.post('/randomWord', {'len' : $('#randomWordLen').val()}, function (res) {
-            $('#randomWord').text(res.word);
+    $('#matchWordButton').click(function () {
+        $.post('/matchWord', {'pattern' : $('#matchWordPattern').val()}, function (res) {
+            $('#matchWord').text(res.word);
         });
     });
 

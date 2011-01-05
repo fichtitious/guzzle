@@ -1,17 +1,10 @@
-exports.randomWord = randomWord;
+exports.matchWord = matchWord;
 exports.matchWords = matchWords;
 
 var pg = require('pg'),
     restler = require('./lib/restler/restler'),
     _ = require('./public/lib/underscore-min'),
     dburl = 'pg://guzzle@localhost:5432/guzzle';
-
-function randomWord (len, callback) {
-    var pattern = new Array(parseInt(len)+1).join('_');
-    matchWord(pattern, function (matches) {
-        return callback(matches[Math.floor(Math.random()*matches.length)]);
-    });
-}
 
 function matchWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize, callback) {
 

@@ -1,18 +1,18 @@
-exports.randomWord = randomWord;
+exports.matchWord = matchWord;
 exports.matchWords = matchWords;
 
 var pg = require('pg'),
     dburl = 'pg://guzzle@localhost:5432/guzzle';
 
-function randomWord (len, callback) {
+function matchWord (pattern, callback) {
 
     pg.connect(dburl, function (error, client) {
-        client.query('SELECT word FROM words.word WHERE len = $1 ORDER BY random() LIMIT 1', [len], function (error, result) {
+        client.query('SELECT word FROM words.word WHERE word.len = $1 AND word LIKE $2 ORDER BY random()', [pattern.length, pattern], function (error, result) {
             if (error) {
                 return callback(error);
             }
             try {
-                return callback(result.rows[0].word);
+                return callback(result.rows.map(function (row) {return row.word}));
             } catch (e) {
                 return callback(e);
             }

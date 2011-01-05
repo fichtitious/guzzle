@@ -11,14 +11,16 @@
 }
 
 .gridNumber {
-    font-size: 0.8em;
+    font-size: 0.7em;
+    color:gray;
     float: left;
 }
 
 .gridLetter {
-    font-size: 1.2em;
-    padding-left: 4px;
-    float: center;
+    font-size: 1.1em;
+    float: right;
+    padding-right: 13px;
+    padding-top: 9px;
 }
 
 .cluesContainer {

@@ -13,9 +13,9 @@ app.get('/', function (req, res) {
     res.render('index.html', {});
 });
 
-app.post('/randomWord', function (req, res) {
-    wordservice.randomWord(req.body.len, function (word) {
-        res.send({'word' : word});
+app.post('/matchWord', function (req, res) {
+    wordservice.matchWord(req.body.pattern, function (words) {
+        res.send({'word' : words[Math.floor(Math.random()*words.length)]});
     });
 });
 
