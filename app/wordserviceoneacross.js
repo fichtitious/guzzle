@@ -2,7 +2,8 @@ exports.randomWord = randomWord;
 exports.matchWords = matchWords;
 
 var pg = require('pg'),
-    restler = require('./lib/restler/restler')
+    restler = require('./lib/restler/restler'),
+    _ = require('./public/lib/underscore-min'),
     dburl = 'pg://guzzle@localhost:5432/guzzle';
 
 function randomWord (len, callback) {
@@ -89,18 +90,7 @@ function substitute (string, idx, letter) {
 }
 
 function matchesPattern (candidate, pattern) {
-
-    if (candidate.length != pattern.length) {
-        return false;
-    }
-
-    var candidateLetters = candidate.split('');
-    var patternLetters = pattern.split('');
-    for (i = 0; i < candidateLetters.length; i++) {
-        if ((patternLetters[i] != '_') && (patternLetters[i] != candidateLetters[i])) {
-            return false;
-        }
-    }
-
-    return true;
+    return _.map(candidate.split(''), function (letter, i) {
+        return (pattern[i] == '_') ? '_' : letter;
+    }).join('') == pattern;
 }
