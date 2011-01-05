@@ -1,8 +1,8 @@
 exports.randomWord = randomWord;
 exports.matchWords = matchWords;
 
-var http = require('http'),
-    pg = require('pg'),
+var pg = require('pg'),
+    restler = require('./lib/restler/restler')
     dburl = 'pg://guzzle@localhost:5432/guzzle';
 
 function randomWord (len, callback) {
@@ -45,10 +45,10 @@ function matchWord (pattern, callback) {
                 return callback(error);
             }
             if (result.rows.length !== 0) {
-                console.log('cache hit for ' + pattern);
+                console.log('<cache> HIT for ' + pattern);
                 return callback(result.rows.map(function (row) {return row.match}));
             } else {
-                console.log('cache miss for ' + pattern);
+                console.log('<cache> MISS for ' + pattern);
                 matchWordLive(pattern, callback);
             }
         });
@@ -58,44 +58,15 @@ function matchWord (pattern, callback) {
 
 function matchWordLive (pattern, callback) {
 
-    try {
-        var request = http.createClient(80, 'www.oneacross.com').request('GET',
-            '/cgi-bin/search_banner.cgi?p0=' + escapeWildcards(pattern), {'host' : 'www.oneacross.com'});
-        request.end();
-        request.on('response', function (response) {
-            try {
-                response.setEncoding('utf8');
-                var body = '';
-                response.on('data', function (chunk) {
-                    try {
-                        body += chunk
-                    } catch (error) {
-                        console.log(error);
-                        callback([]);
-                    }
-                });
-                response.on('end', function () {
-                    try {
-                        var matches = body.match(/\?w=.*?&/g) || [];
-                        matches = matches.map(function (candidate) {
-                            return candidate.substring(3, candidate.length-1);
-                        }).filter(function (candidate) {return matchesPattern (candidate, pattern)});
-                        cacheMatches(pattern, matches);
-                        callback(matches);
-                    } catch (error) {
-                        console.log(error);
-                        callback([]);
-                    }
-                });
-            } catch (error) {
-                console.log(error);
-                callback([]);
-            }
-        });
-    } catch (error) {
-        console.log(error);
-        callback([]);
-    }
+    var url = 'http://www.oneacross.com/cgi-bin/search_banner.cgi?p0=' + pattern.replace(/_/g, '?');
+    restler.get(url).addListener('complete', function (body) {
+        var matches = body.match(/\?w=.*?&/g) || [];
+        matches = matches.map(function (candidate) {
+            return candidate.substring(3, candidate.length-1);
+        }).filter(function (candidate) {return matchesPattern (candidate, pattern)});
+        cacheMatches(pattern, matches);
+        callback(matches);
+    });
 
 }
 
@@ -111,8 +82,10 @@ function cacheMatches (pattern, matches) {
 
 }
 
-function escapeWildcards (pattern) {
-    return pattern.replace(/_/g, '?');
+function substitute (string, idx, letter) {
+    var letters = string.split('');
+    letters[idx] = letter;
+    return letters.join('');
 }
 
 function matchesPattern (candidate, pattern) {
