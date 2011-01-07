@@ -39,17 +39,29 @@ function fillRecursive (puzzle, callback) {
             slotsToFill.sort(function (slotA, slotB) {
                 var matchesA = patternsToMatches[slotA.getQueryPattern(puzzle.grid)];
                 var matchesB = patternsToMatches[slotB.getQueryPattern(puzzle.grid)];
-                return matchesA.length < matchesB.length ? 1 : -1;
+                return matchesA.length > matchesB.length ? 1 : -1;
             });
             var mostConstrainedSlot = slotsToFill[0];
             var matchOptions = patternsToMatches[mostConstrainedSlot.getQueryPattern(puzzle.grid)];
             if (matchOptions.length > 0) {
-                mostConstrainedSlot.fillIn(randomMember(matchOptions), puzzle.grid);
+                mostConstrainedSlot.fillIn(mostCompatible(matchOptions), puzzle.grid);
                 fillRecursive(puzzle, callback);
             } else {
                 callback(puzzle);
             }
         });
+    }
+
+}
+
+function mostCompatible (words) {
+
+    return words.sort(function (wordA, wordB) {
+        return compatibility(wordA) < compatibility(wordB) ? 1 : -1;
+    })[0];
+
+    function compatibility (word) {
+        return word.split('').filter(function (l) {return _.contains(['a', 'e', 'i', 'o', 'u'], l)}).length / word.length;
     }
 
 }
