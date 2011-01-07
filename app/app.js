@@ -1,6 +1,7 @@
 var express = require('express'),
     puzzle = require('./puzzle'),
     wordservice = require('./wordservice'),
+    fillservice = require('./fillservice'),
     app = express.createServer(),
     port = process.argv[2];
 
@@ -31,7 +32,7 @@ app.post('/newEmptyPuzzle', function (req, res) {
 });
 
 app.post('/newFullPuzzle', function (req, res) {
-    puzzle.withWords(new puzzle.Puzzle(req.body.newPuzzleSize), function (puzzleWithWords) {
+    fillservice.fill(new puzzle.Puzzle(req.body.newPuzzleSize), function (puzzleWithWords) {
         res.send({'puzzle' : puzzleWithWords});
     });
 });
