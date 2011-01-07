@@ -1,5 +1,7 @@
 exports.matchWord = matchWord;
 exports.matchWords = matchWords;
+exports.crossWords = crossWords;
+exports.areTheseWords = areTheseWords;
 
 var pg = require('pg'),
     dburl = 'pg://guzzle@localhost:5432/guzzle';
@@ -11,19 +13,47 @@ function matchWord (pattern, callback) {
             if (error) {
                 return callback(error);
             }
-            try {
-                return callback(result.rows.map(function (row) {return row.word}));
-            } catch (e) {
-                return callback(e);
-            }
+            return callback(result.rows.map(function (row) {return row.word}));
         });
     });
 
 }
 
-function matchWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize, callback) {
+function matchWords (patterns, callback) {
 
-    console.log('matchWords() for ' + patternA + ' and ' + patternB + ' (' + intersectIdxA + ', ' + intersectIdxB + ')');
+    var query = patterns.map(function (pattern) {
+        return "SELECT word, '" + pattern + "' AS pattern FROM words.word WHERE word.len = " + pattern.length + " AND word LIKE '" + pattern + "'";
+    }).join("\nUNION ");
+    console.log(query);
+
+    pg.connect(dburl, function (error, client) {
+        client.query(query, function (error, result) {
+            var patternsToMatches = {};
+            patterns.forEach(function (pattern) { patternsToMatches[pattern] = [] });
+            result.rows.forEach(function (row) { patternsToMatches[row.pattern].push(row.word) });
+            callback(patternsToMatches);
+        });
+    });
+
+}
+
+function areTheseWords (patterns, callback) {
+
+    var query = patterns.map(function (pattern) {
+        return "SELECT 1 FROM words.word WHERE word = '" + pattern + "'";
+    }).join("\nUNION ALL ");
+
+    pg.connect(dburl, function (error, client) {
+        client.query(query, function (error, result) {
+            callback(result.rows.length == patterns.length);
+        });
+    });
+
+}
+
+function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize, callback) {
+
+    console.log('crossWords() for ' + patternA + ' and ' + patternB + ' (' + intersectIdxA + ', ' + intersectIdxB + ')');
 
     pg.connect(dburl, function (error, client) {
         client.query('WITH wordA AS (SELECT word FROM words.word WHERE word.len = $1 AND word LIKE $2),' +

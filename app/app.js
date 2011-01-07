@@ -1,6 +1,6 @@
 var express = require('express'),
     puzzle = require('./puzzle'),
-    wordservice = require('./wordserviceoneacross'),
+    wordservice = require('./wordservice'),
     app = express.createServer(),
     port = process.argv[2];
 
@@ -19,8 +19,8 @@ app.post('/matchWord', function (req, res) {
     });
 });
 
-app.post('/matchWords', function (req, res) {
-    wordservice.matchWords(req.body.patternA, req.body.patternB,
+app.post('/crossWords', function (req, res) {
+    wordservice.crossWords(req.body.patternA, req.body.patternB,
             parseInt(req.body.intersectIdxA), parseInt(req.body.intersectIdxB), true, function (wordA, wordB) {
         res.send({'wordA' : wordA, 'wordB' : wordB});
     });

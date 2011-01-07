@@ -76,12 +76,6 @@ function cacheMatches (pattern, matches) {
 
 }
 
-function substitute (string, idx, letter) {
-    var letters = string.split('');
-    letters[idx] = letter;
-    return letters.join('');
-}
-
 function matchesPattern (candidate, pattern) {
     return _.map(candidate.split(''), function (letter, i) {
         return (pattern[i] == '_') ? '_' : letter;

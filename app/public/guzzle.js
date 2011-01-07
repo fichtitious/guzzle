@@ -28,8 +28,8 @@ $(function() {
         });
     });
 
-    $('#matchWordsButton').click(function () {
-        $.post('/matchWords', { 'patternA' : $('#patternA').val(),
+    $('#crossWordsButton').click(function () {
+        $.post('/crossWords', { 'patternA' : $('#patternA').val(),
                                 'patternB' : $('#patternB').val(),
                                 'intersectIdxA' : $('#intersectIdxA').val(),
                                 'intersectIdxB' : $('#intersectIdxB').val()
