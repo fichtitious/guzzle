@@ -39,6 +39,12 @@ $(function() {
         });
     });
 
+    $(document).keydown(new KeyHandler().handle);
+
+});
+
+function KeyHandler () {
+
     $('#gridContainer').live('mouseenter', function () {
         $('#gridContainer').addClass('focused');
         $('.suspendedFocusedGridCell').addClass('focusedGridCell');
@@ -54,18 +60,23 @@ $(function() {
         $(event.currentTarget).addClass('focusedGridCell');
     });
 
-    $(document).keydown(function (event) {
+    var lastMoveDown, lastMoveRight = null;
+
+    this.handle = function (event) {
+
         var focused = $($('.focusedGridCell')[0]);
         if (focused.length > 0 && $('#gridContainer').hasClass('focused')) {
+
             event.preventDefault();
+
             if (event.which == 37) {
-                moveCellFocus(focused, 0, -1);
+                refocus(focused, 0, -1);
             } else if (event.which == 39) {
-                moveCellFocus(focused, 0, 1);
+                refocus(focused, 0, 1);
             } else if (event.which == 38) {
-                moveCellFocus(focused, -1, 0);
+                refocus(focused, -1, 0);
             } else if (event.which == 40) {
-                moveCellFocus(focused, 1, 0);
+                refocus(focused, 1, 0);
             } else if (event.which == 8 || event.which == 46) {
                 focused.find('span.gridLetter').text('');
                 focused.data('cell').letter = null;
@@ -74,21 +85,27 @@ $(function() {
                 if (letter >= 'A' && letter <= 'Z') {
                     focused.find('span.gridLetter').text(letter);
                     focused.data('cell').letter = letter;
+                    if (lastMoveDown !== null && lastMoveDown + lastMoveRight == 1) {
+                        refocus(focused, lastMoveDown, lastMoveRight, true);
+                    }
                 }
             }
+
         }
-    });
-
-});
-
-function moveCellFocus (currentFocus, moveDown, moveRight) {
-    var currentRowIdx = parseInt(currentFocus.attr('value').split('-')[0]);
-    var currentColIdx = parseInt(currentFocus.attr('value').split('-')[1]);
-    var newFocus = $('#cell' + (currentRowIdx+moveDown) + '-' + (currentColIdx+moveRight));
-    if (newFocus.length > 0) {
-        $('.focusedGridCell').removeClass('focusedGridCell');
-        newFocus.addClass('focusedGridCell');
     }
+
+    function refocus (current, moveDown, moveRight, avoidBlack) {
+        var rowIdx = parseInt(current.attr('value').split('-')[0]);
+        var colIdx = parseInt(current.attr('value').split('-')[1]);
+        var newFocus = $('#cell' + (rowIdx+moveDown) + '-' + (colIdx+moveRight));
+        if (newFocus.length > 0 && (avoidBlack === undefined || !newFocus.hasClass('black'))) {
+            $('.focusedGridCell').removeClass('focusedGridCell');
+            newFocus.addClass('focusedGridCell');
+            lastMoveDown = moveDown;
+            lastMoveRight = moveRight;
+        }
+    }
+
 }
 
 function redrawPuzzle(puzzle) {
