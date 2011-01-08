@@ -9,7 +9,7 @@ var pg = require('pg'),
 function matchWord (pattern, callback) {
 
     pg.connect(dburl, function (error, client) {
-        client.query('SELECT word FROM words.word WHERE word.len = $1 AND word LIKE $2 ORDER BY random()', [pattern.length, pattern], function (error, result) {
+        client.query("SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(pattern) + " ORDER BY random()", function (error, result) {
             if (error) {
                 return callback(error);
             }
@@ -22,7 +22,7 @@ function matchWord (pattern, callback) {
 function matchWords (patterns, callback) {
 
     var query = patterns.map(function (pattern) {
-        return "SELECT word, '" + pattern + "' AS pattern FROM words.word WHERE word.len = " + pattern.length + " AND word LIKE '" + pattern + "'";
+        return "SELECT word, '" + pattern + "' AS pattern FROM words.word WHERE " + lenEqualsAndPatternLike(pattern);
     }).join("\nUNION ");
     console.log(query);
 
@@ -56,13 +56,12 @@ function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize
     console.log('crossWords() for ' + patternA + ' and ' + patternB + ' (' + intersectIdxA + ', ' + intersectIdxB + ')');
 
     pg.connect(dburl, function (error, client) {
-        client.query('WITH wordA AS (SELECT word FROM words.word WHERE word.len = $1 AND word LIKE $2),' +
-                     '     wordB AS (SELECT word FROM words.word WHERE word.len = $3 AND word LIKE $4) ' +
-                     'SELECT wordA.word AS wa, wordB.word AS wb ' +
-                     'FROM wordA JOIN wordB on SUBSTRING (wordA.word FROM $5 FOR 1) = SUBSTRING (wordB.word FROM $6 FOR 1) ' +
-                     (randomize ? 'ORDER BY random() ' : '') +
-                     'LIMIT 1',
-                [patternA.length, patternA, patternB.length, patternB, intersectIdxA+1, intersectIdxB+1], function (error, result) {
+        client.query("WITH wordA AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternA) + ")," +
+                     "     wordB AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternB) + ") " +
+                     "SELECT wordA.word AS wa, wordB.word AS wb " +
+                     "FROM wordA JOIN wordB on SUBSTRING (wordA.word FROM " + intersectIdxA+1 + " FOR 1) = SUBSTRING (wordB.word FROM " + intersectIdxB+1 + " FOR 1) " +
+                     (randomize ? "ORDER BY random() " : "") +
+                     "LIMIT 1", function (error, result) {
             if (error) {
                 console.log(error);
                 return callback('', '');
@@ -76,4 +75,10 @@ function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize
         });
     });
 
+}
+
+function lenEqualsAndPatternLike (pattern) {
+    var len = " word.len = " + pattern.length;
+    var like = pattern.split('').every(function (l) {return l == '_'}) ? " " : " AND word like '" + pattern + "'";
+    return len + like;
 }
