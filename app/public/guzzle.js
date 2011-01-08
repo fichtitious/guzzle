@@ -39,22 +39,57 @@ $(function() {
         });
     });
 
-    $('.gridCell').live('mouseenter', function (event) {
-        $(event.currentTarget).attr('id', 'focusedGridCell');
-    }).live('mouseleave', function (event) {
-        $(event.currentTarget).removeAttr('id', 'focusedGridCell');
+    $('#gridContainer').live('mouseenter', function () {
+        $('#gridContainer').addClass('focused');
+        $('.suspendedFocusedGridCell').addClass('focusedGridCell');
+        $('.suspendedFocusedGridCell').removeClass('suspendedFocusedGridCell');
+    }).live('mouseleave', function () {
+        $('#gridContainer').removeClass('focused');
+        $('.focusedGridCell').addClass('suspendedFocusedGridCell');
+        $('.focusedGridCell').removeClass('focusedGridCell');
+    });
+
+    $('.gridCell').live('click', function (event) {
+        $('.focusedGridCell').removeClass('focusedGridCell');
+        $(event.currentTarget).addClass('focusedGridCell');
     });
 
     $(document).keydown(function (event) {
-        var gridCell = $('#focusedGridCell');
-        if (gridCell.length > 0 && !gridCell.hasClass('black')) {
-            var letter = (event.which == 8 || event.which == 46) ? '' : String.fromCharCode(event.which);
-            gridCell.find('span.gridLetter').text(letter);
-            gridCell.data('cell').letter = letter;
+        var focused = $($('.focusedGridCell')[0]);
+        if (focused.length > 0 && $('#gridContainer').hasClass('focused')) {
+            event.preventDefault();
+            if (event.which == 37) {
+                moveCellFocus(focused, 0, -1);
+            } else if (event.which == 39) {
+                moveCellFocus(focused, 0, 1);
+            } else if (event.which == 38) {
+                moveCellFocus(focused, -1, 0);
+            } else if (event.which == 40) {
+                moveCellFocus(focused, 1, 0);
+            } else if (event.which == 8 || event.which == 46) {
+                focused.find('span.gridLetter').text('');
+                focused.data('cell').letter = null;
+            } else {
+                var letter = String.fromCharCode(event.which);
+                if (letter >= 'A' && letter <= 'Z') {
+                    focused.find('span.gridLetter').text(letter);
+                    focused.data('cell').letter = letter;
+                }
+            }
         }
     });
 
 });
+
+function moveCellFocus (currentFocus, moveDown, moveRight) {
+    var currentRowIdx = parseInt(currentFocus.attr('value').split('-')[0]);
+    var currentColIdx = parseInt(currentFocus.attr('value').split('-')[1]);
+    var newFocus = $('#cell' + (currentRowIdx+moveDown) + '-' + (currentColIdx+moveRight));
+    if (newFocus.length > 0) {
+        $('.focusedGridCell').removeClass('focusedGridCell');
+        newFocus.addClass('focusedGridCell');
+    }
+}
 
 function redrawPuzzle(puzzle) {
 
@@ -88,7 +123,8 @@ function redrawPuzzle(puzzle) {
                     { width : 39,
                       height : 39,
                       class : 'gridCell',
-                      id : 'cell' + rowIdx + '-' + colIdx
+                      id : 'cell' + rowIdx + '-' + colIdx,
+                      value : rowIdx + '-' + colIdx
                     }).appendTo(gridContainer);
 
                 var cell = puzzle.grid[rowIdx][colIdx];

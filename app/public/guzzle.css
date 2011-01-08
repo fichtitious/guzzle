@@ -10,9 +10,13 @@
     float: left;
 }
 
+.focusedGridCell {
+    outline-style: dashed;
+}
+
 .gridNumber {
     font-size: 0.7em;
-    color:gray;
+    color: gray;
     float: left;
 }
 
