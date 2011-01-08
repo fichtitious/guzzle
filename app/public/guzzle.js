@@ -39,6 +39,21 @@ $(function() {
         });
     });
 
+    $('.gridCell').live('mouseenter', function (event) {
+        $(event.currentTarget).attr('id', 'focusedGridCell');
+    }).live('mouseleave', function (event) {
+        $(event.currentTarget).removeAttr('id', 'focusedGridCell');
+    });
+
+    $(document).keydown(function (event) {
+        var gridCell = $('#focusedGridCell');
+        if (gridCell.length > 0 && !gridCell.hasClass('black')) {
+            var letter = (event.which == 8 || event.which == 46) ? '' : String.fromCharCode(event.which);
+            gridCell.find('span.gridLetter').text(letter);
+            gridCell.data('cell').letter = letter;
+        }
+    });
+
 });
 
 function redrawPuzzle(puzzle) {
@@ -77,6 +92,7 @@ function redrawPuzzle(puzzle) {
                     }).appendTo(gridContainer);
 
                 var cell = puzzle.grid[rowIdx][colIdx];
+                gridCell.data('cell', cell);
                 if (cell.isBlack) {
                     gridCell.addClass('black');
                 } else {
