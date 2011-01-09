@@ -2,6 +2,7 @@
 <html>
     <head>
         <script src="lib/jquery-1.4.4.min.js"></script>
+        <script src="lib/underscore-min.js"></script>
         <script src="guzzle.js"></script>
         <link rel="stylesheet" type="text/css" href="guzzle.css">
     </head>
@@ -23,9 +24,13 @@
         <button id="newEmptyPuzzleButton">new empty puzzle</button>
         <button id="newFullPuzzleButton">new full puzzle</button>
         <div id="puzzleContainer">
+            <button id="fillAcrossButton">fill across</button>
+            <button id="fillDownButton">fill down</button>
+            <button id="commitHelpButton">ok</button>
+            <button id="rollbackHelpButton">no</button>
             <div id="gridContainer"></div>
-            <div id="cluesContainer"></div>
         </div>
+        <div id="cluesContainer"></div>
 
     </body>
 </html>

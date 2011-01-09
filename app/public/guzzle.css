@@ -27,6 +27,10 @@
     padding-top: 9px;
 }
 
+.tentative {
+    color: gray;
+}
+
 .cluesContainer {
     float: left;
 }

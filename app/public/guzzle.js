@@ -39,18 +39,84 @@ $(function() {
         });
     });
 
-    $(document).keydown(new KeyHandler().handle);
+    $('#fillAcrossButton').live('click', function () {
+        matchFocusedWord(true);
+    });
+
+    $('#fillDownButton').live('click', function () {
+        matchFocusedWord(false);
+    });
+
+    $('#commitHelpButton').live('click', function () {
+        $('.tentative').each(function () {
+            $(this).removeClass('tentative');
+            $(this).data('cell').letter = $(this).find('span.gridLetter').text();
+        });
+    });
+
+    $('#rollbackHelpButton').live('click', function () {
+        $('.tentative').each(function () {
+            $(this).removeClass('tentative');
+            $(this).find('span.gridLetter').text('');
+        });
+    });
+
+    setUpKeyHandler();
 
 });
 
-function KeyHandler () {
+function matchFocusedWord (isAcross) {
 
-    $('#gridContainer').live('mouseenter', function () {
-        $('#gridContainer').addClass('focused');
+    var focusedGridCell = getFocusedGridCell();
+    if (focusedGridCell !== null && !focusedGridCell.hasClass('black')) {
+        var cell = focusedGridCell.data('cell');
+        var puzzle = $('#puzzleContainer').data('puzzle');
+        var slot = puzzle.slots.filter(function (slot) {
+            return indexOfCell(slot, cell) != -1 && slot.isAcross == isAcross;
+        })[0];
+        var pattern = getQueryPattern(slot, puzzle.grid);
+        $.post('/matchWord', {'pattern' : pattern}, function (res) {
+            if (res.word === undefined) {
+                return;
+            }
+            for (i = 0; i < res.word.length; i++) {
+                var letter = res.word[i];
+                var gridCell = $('#cell' + (slot.startCoord[0] + (isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (isAcross ? i : 0)));
+                var cell = gridCell.data('cell');
+                if (cell.letter === null) {
+                    gridCell.find('span.gridLetter').text(letter);
+                    gridCell.addClass('tentative');
+                }
+            }
+        });
+    }
+
+    function indexOfCell (slot, cell) {
+        for (i = 0; i < slot.size; i++) {
+            if (_.isEqual([cell.rowIdx, cell.colIdx], slot.coords[i])) {
+                return i;
+            }
+        }
+        return -1;
+    };
+
+    function getQueryPattern (slot, grid) {
+        return slot.coords.map(function (coord) {
+            var cell = grid[coord[0]][coord[1]];
+            return cell.letter === null ? '_' : cell.letter;
+        }).join('');
+    };
+
+}
+
+function setUpKeyHandler () {
+
+    $('#puzzleContainer').live('mouseenter', function () {
+        $('#puzzleContainer').addClass('focused');
         $('.suspendedFocusedGridCell').addClass('focusedGridCell');
         $('.suspendedFocusedGridCell').removeClass('suspendedFocusedGridCell');
     }).live('mouseleave', function () {
-        $('#gridContainer').removeClass('focused');
+        $('#puzzleContainer').removeClass('focused');
         $('.focusedGridCell').addClass('suspendedFocusedGridCell');
         $('.focusedGridCell').removeClass('focusedGridCell');
     });
@@ -62,10 +128,12 @@ function KeyHandler () {
 
     var lastMoveDown, lastMoveRight = null;
 
-    this.handle = function (event) {
+    $(document).keydown(handle);
 
-        var focused = $($('.focusedGridCell')[0]);
-        if (focused.length > 0 && $('#gridContainer').hasClass('focused')) {
+    function handle (event) {
+
+        var focused = getFocusedGridCell();
+        if (focused !== null && $('#puzzleContainer').hasClass('focused')) {
 
             event.preventDefault();
 
@@ -84,6 +152,7 @@ function KeyHandler () {
                 var letter = String.fromCharCode(event.which);
                 if (letter >= 'A' && letter <= 'Z') {
                     focused.find('span.gridLetter').text(letter);
+                    focused.removeClass('tentative');
                     focused.data('cell').letter = letter;
                     if (lastMoveDown !== null && lastMoveDown + lastMoveRight == 1) {
                         refocus(focused, lastMoveDown, lastMoveRight, true);
@@ -108,12 +177,18 @@ function KeyHandler () {
 
 }
 
-function redrawPuzzle(puzzle) {
+function getFocusedGridCell () {
+    var focused = $($('.focusedGridCell')[0]);
+    return focused.length > 0 ? focused : null;
+}
+
+function redrawPuzzle (puzzle) {
 
     var puzzleContainer = redrawPuzzleContainer('body');
+    redrawHelpButtons(puzzleContainer);
     var gridContainer = redrawGridContainer(puzzleContainer);
     redrawGridCells(gridContainer);
-    var cluesContainer = redrawCluesContainer(puzzleContainer);
+    var cluesContainer = redrawCluesContainer();
     redrawClues(cluesContainer);
 
     function redrawPuzzleContainer(topContainer) {
@@ -121,6 +196,13 @@ function redrawPuzzle(puzzle) {
         var puzzleContainer = $('<div />', {id : 'puzzleContainer'}).appendTo(topContainer);
         puzzleContainer.data('puzzle', puzzle);
         return puzzleContainer;
+    }
+
+    function redrawHelpButtons(puzzleContainer) {
+        $('<button />', {text : 'fill across', id : 'fillAcrossButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'fill down', id : 'fillDownButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'ok', id : 'commitHelpButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'no', id : 'rollbackHelpButton'}).appendTo(puzzleContainer);
     }
 
     function redrawGridContainer(puzzleContainer) {
@@ -162,11 +244,12 @@ function redrawPuzzle(puzzle) {
         }
     }
 
-    function redrawCluesContainer(puzzleContainer) {
+    function redrawCluesContainer() {
+        $('#cluesContainer').remove();
         var cluesContainer = $('<div />',
           { id : 'cluesContainer',
             class : 'cluesContainer'
-          }).appendTo(puzzleContainer);
+          }).appendTo('body');
         return cluesContainer;
     }
 
