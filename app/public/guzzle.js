@@ -94,13 +94,13 @@ function helpWithWord (isAcross) {
     function startWaiting (spin) {
         $('.helpButton').attr('disabled', 'disabled');
         if (spin) {
-            $('.spinner').show();
+            $('#spinner').show();
         }
     }
 
     function doneWaiting () {
         $('.helpButton').attr('disabled', '');
-        $('.spinner').hide();
+        $('#spinner').hide();
     }
 
     function findSlot (cell, isAcross) {
@@ -223,6 +223,10 @@ function redrawPuzzle (puzzle) {
         $('<button />', {text : 'help both', id : 'helpBothButton', class : 'helpButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'ok', id : 'commitHelpButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'no', id : 'rollbackHelpButton'}).appendTo(puzzleContainer);
+        $('<img />', { src : 'spinners/' + Math.ceil(Math.random()*5) + '.gif',
+                       id : 'spinner',
+                       style : 'display: none'
+                     }).appendTo(puzzleContainer);
     }
 
     function redrawGridContainer(puzzleContainer) {
@@ -236,7 +240,6 @@ function redrawPuzzle (puzzle) {
     }
 
     function redrawGridCells(gridContainer) {
-        var spinnerUrl = 'spinners/' + Math.ceil(Math.random()*5) + '.gif';
         for (var rowIdx = 0; rowIdx < puzzle.size; rowIdx++) {
             for (var colIdx = 0; colIdx < puzzle.size; colIdx++) {
                 var gridCell = $('<div />',
@@ -251,10 +254,6 @@ function redrawPuzzle (puzzle) {
                 gridCell.data('cell', cell);
                 if (cell.isBlack) {
                     gridCell.addClass('blackCell');
-                    $('<img />', { src : spinnerUrl,
-                                   class : 'spinner',
-                                   style : 'display: none'
-                                 }).appendTo(gridCell);
                 } else {
                     $('<span />',
                       { text : cell.number === null ? '' : cell.number,
