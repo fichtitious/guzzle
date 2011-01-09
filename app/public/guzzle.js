@@ -165,6 +165,7 @@ function setUpKeyHandler () {
                 refocus(focused, 1, 0);
             } else if (event.which == 8 || event.which == 46) {
                 focused.find('span.gridLetter').text('');
+                focused.removeClass('tentative');
                 focused.data('cell').letter = null;
             } else {
                 var letter = String.fromCharCode(event.which);
