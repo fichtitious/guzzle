@@ -1,19 +1,45 @@
 exports.matchWord = matchWord;
-exports.matchWords = matchWords;
 exports.crossWords = crossWords;
-exports.areTheseWords = areTheseWords;
 
 var pg = require('pg'),
     dburl = 'pg://guzzle@localhost:5432/guzzle';
 
 function matchWord (pattern, callback) {
 
+    var query = "SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(pattern) + " ORDER BY random()";
+    console.log(query);
+
     pg.connect(dburl, function (error, client) {
-        client.query("SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(pattern) + " ORDER BY random()", function (error, result) {
+        client.query(query, function (error, result) {
             if (error) {
-                return callback(error);
+                console.log(error);
             }
-            return callback(result.rows.map(function (row) {return row.word}));
+            return callback(result.rows[0].word);
+        });
+    });
+
+}
+
+function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize, callback) {
+
+    var query = "WITH wordA AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternA) + ")," +
+                "     wordB AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternB) + ") " +
+                "SELECT wordA.word AS wa, wordB.word AS wb " +
+                "FROM wordA JOIN wordB on SUBSTRING (wordA.word FROM " + intersectIdxA+1 + " FOR 1) = SUBSTRING (wordB.word FROM " + intersectIdxB+1 + " FOR 1) " +
+                (randomize ? "ORDER BY random() " : "") +
+                "LIMIT 1";
+    console.log(query);
+
+    pg.connect(dburl, function (error, client) {
+        client.query(query, function (error, result) {
+            if (error) {
+                console.log(error);
+            }
+            try {
+                return callback(result.rows[0].wa, result.rows[0].wb);
+            } catch (e) {
+                console.log(e);
+            }
         });
     });
 
@@ -46,32 +72,6 @@ function areTheseWords (patterns, callback) {
     pg.connect(dburl, function (error, client) {
         client.query(query, function (error, result) {
             callback(result.rows.length == patterns.length);
-        });
-    });
-
-}
-
-function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize, callback) {
-
-    console.log('crossWords() for ' + patternA + ' and ' + patternB + ' (' + intersectIdxA + ', ' + intersectIdxB + ')');
-
-    pg.connect(dburl, function (error, client) {
-        client.query("WITH wordA AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternA) + ")," +
-                     "     wordB AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternB) + ") " +
-                     "SELECT wordA.word AS wa, wordB.word AS wb " +
-                     "FROM wordA JOIN wordB on SUBSTRING (wordA.word FROM " + intersectIdxA+1 + " FOR 1) = SUBSTRING (wordB.word FROM " + intersectIdxB+1 + " FOR 1) " +
-                     (randomize ? "ORDER BY random() " : "") +
-                     "LIMIT 1", function (error, result) {
-            if (error) {
-                console.log(error);
-                return callback('', '');
-            }
-            try {
-                return callback(result.rows[0].wa, result.rows[0].wb);
-            } catch (e) {
-                console.log(e);
-                return callback('', '');
-            }
         });
     });
 

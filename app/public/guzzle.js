@@ -1,15 +1,5 @@
 $(function() {
 
-    $('#newFullPuzzleButton').click(function () {
-        $('#puzzleContainer').remove();
-        $('<div />', {id : 'puzzleContainer', text : 'one sec...'}).appendTo('body');
-        $.post('newFullPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
-            function (res) {
-                redrawPuzzle(res.puzzle);
-            }
-        );
-    });
-
     $('#newEmptyPuzzleButton').click(function () {
         $.post('newEmptyPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
             function (res) {
@@ -18,37 +8,16 @@ $(function() {
         );
     });
 
-    $('.clueNumber').live('hover', function (event) {
-        $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
+    $('#helpAcrossButton').live('click', function () {
+        helpWithWord(true);
     });
 
-    $('#matchWordButton').click(function () {
-        $.post('/matchWord', {'pattern' : $('#matchWordPattern').val()}, function (res) {
-            $('#matchWord').text(res.word);
-        });
+    $('#helpDownButton').live('click', function () {
+        helpWithWord(false);
     });
 
-    $('#crossWordsButton').click(function () {
-        $.post('/crossWords', { 'patternA' : $('#patternA').val(),
-                                'patternB' : $('#patternB').val(),
-                                'intersectIdxA' : $('#intersectIdxA').val(),
-                                'intersectIdxB' : $('#intersectIdxB').val()
-                              }, function (res) {
-            $('#wordA').text(res.wordA);
-            $('#wordB').text(res.wordB);
-        });
-    });
-
-    $('#fillAcrossButton').live('click', function () {
-        matchFocusedWord(true);
-    });
-
-    $('#fillDownButton').live('click', function () {
-        matchFocusedWord(false);
-    });
-
-    $('#fillBothButton').live('click', function () {
-        matchFocusedWord();
+    $('#helpBothButton').live('click', function () {
+        helpWithWord();
     });
 
     $('#commitHelpButton').live('click', function () {
@@ -65,11 +34,15 @@ $(function() {
         });
     });
 
+    $('.clueNumber').live('hover', function (event) {
+        $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
+    });
+
     setUpKeyHandler();
 
 });
 
-function matchFocusedWord (isAcross) {
+function helpWithWord (isAcross) {
 
     var focusedGridCell = getFocusedGridCell();
     if (focusedGridCell !== null && !focusedGridCell.hasClass('black')) {
@@ -99,12 +72,6 @@ function matchFocusedWord (isAcross) {
         }
     }
 
-    function findSlot (cell, isAcross) {
-        return puzzle.slots.filter(function (slot) {
-            return indexOfCell(slot, cell) != -1 && slot.isAcross == isAcross;
-        })[0];
-    }
-
     function fillWord (word, slot, isAcross) {
         if (word === undefined) {
             return;
@@ -118,6 +85,12 @@ function matchFocusedWord (isAcross) {
                 gridCell.addClass('tentative');
             }
         }
+    }
+
+    function findSlot (cell, isAcross) {
+        return puzzle.slots.filter(function (slot) {
+            return indexOfCell(slot, cell) != -1 && slot.isAcross == isAcross;
+        })[0];
     }
 
     function indexOfCell (slot, cell) {
@@ -228,9 +201,9 @@ function redrawPuzzle (puzzle) {
     }
 
     function redrawHelpButtons(puzzleContainer) {
-        $('<button />', {text : 'fill across', id : 'fillAcrossButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'fill down', id : 'fillDownButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'fill both', id : 'fillBothButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'help across', id : 'helpAcrossButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'help down', id : 'helpDownButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'help both', id : 'helpBothButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'ok', id : 'commitHelpButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'no', id : 'rollbackHelpButton'}).appendTo(puzzleContainer);
     }
