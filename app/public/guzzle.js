@@ -45,7 +45,7 @@ $(function() {
 function helpWithWord (isAcross) {
 
     var focusedGridCell = getFocusedGridCell();
-    if (focusedGridCell !== null && !focusedGridCell.hasClass('black')) {
+    if (focusedGridCell !== null && !focusedGridCell.hasClass('blackCell')) {
         var cell = focusedGridCell.data('cell');
         var puzzle = $('#puzzleContainer').data('puzzle');
         if (isAcross === undefined) {
@@ -55,6 +55,7 @@ function helpWithWord (isAcross) {
             var patternDown = getQueryPattern(slotDown, puzzle.grid);
             var intersectIdxAcross = indexOfCell(slotAcross, cell);
             var intersectIdxDown = indexOfCell(slotDown, cell);
+            startWaiting(true);
             $.post('/crossWords', { 'patternA' : patternAcross,
                                     'patternB' : patternDown,
                                     'intersectIdxA' : intersectIdxAcross,
@@ -62,18 +63,21 @@ function helpWithWord (isAcross) {
                                   }, function (res) {
                 fillWord(res.wordA, slotAcross, true);
                 fillWord(res.wordB, slotDown, false);
+                doneWaiting();
             });
         } else {
             var slot = findSlot(cell, isAcross);
             var pattern = getQueryPattern(slot, puzzle.grid);
+            startWaiting(false);
             $.post('/matchWord', {'pattern' : pattern}, function (res) {
                 fillWord(res.word, slot, isAcross);
+                doneWaiting();
             });
         }
     }
 
     function fillWord (word, slot, isAcross) {
-        if (word === undefined) {
+        if (word == '') {
             return;
         }
         for (i = 0; i < word.length; i++) {
@@ -85,6 +89,18 @@ function helpWithWord (isAcross) {
                 gridCell.addClass('tentative');
             }
         }
+    }
+
+    function startWaiting (spin) {
+        $('.helpButton').attr('disabled', 'disabled');
+        if (spin) {
+            $('.spinner').show();
+        }
+    }
+
+    function doneWaiting () {
+        $('.helpButton').attr('disabled', '');
+        $('.spinner').hide();
     }
 
     function findSlot (cell, isAcross) {
@@ -130,9 +146,9 @@ function setUpKeyHandler () {
 
     var lastMoveDown, lastMoveRight = null;
 
-    $(document).keydown(handle);
+    $(document).keydown(handleKey);
 
-    function handle (event) {
+    function handleKey (event) {
 
         var focused = getFocusedGridCell();
         if (focused !== null && $('#puzzleContainer').hasClass('focused')) {
@@ -169,7 +185,7 @@ function setUpKeyHandler () {
         var rowIdx = parseInt(current.attr('value').split('-')[0]);
         var colIdx = parseInt(current.attr('value').split('-')[1]);
         var newFocus = $('#cell' + (rowIdx+moveDown) + '-' + (colIdx+moveRight));
-        if (newFocus.length > 0 && (avoidBlack === undefined || !newFocus.hasClass('black'))) {
+        if (newFocus.length > 0 && (avoidBlack === undefined || !newFocus.hasClass('blackCell'))) {
             $('.focusedGridCell').removeClass('focusedGridCell');
             newFocus.addClass('focusedGridCell');
             lastMoveDown = moveDown;
@@ -201,9 +217,9 @@ function redrawPuzzle (puzzle) {
     }
 
     function redrawHelpButtons(puzzleContainer) {
-        $('<button />', {text : 'help across', id : 'helpAcrossButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'help down', id : 'helpDownButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'help both', id : 'helpBothButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'help across', id : 'helpAcrossButton', class : 'helpButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'help down', id : 'helpDownButton', class : 'helpButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'help both', id : 'helpBothButton', class : 'helpButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'ok', id : 'commitHelpButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'no', id : 'rollbackHelpButton'}).appendTo(puzzleContainer);
     }
@@ -219,6 +235,7 @@ function redrawPuzzle (puzzle) {
     }
 
     function redrawGridCells(gridContainer) {
+        var spinnerUrl = 'spinners/' + Math.ceil(Math.random()*5) + '.gif';
         for (var rowIdx = 0; rowIdx < puzzle.size; rowIdx++) {
             for (var colIdx = 0; colIdx < puzzle.size; colIdx++) {
                 var gridCell = $('<div />',
@@ -232,7 +249,11 @@ function redrawPuzzle (puzzle) {
                 var cell = puzzle.grid[rowIdx][colIdx];
                 gridCell.data('cell', cell);
                 if (cell.isBlack) {
-                    gridCell.addClass('black');
+                    gridCell.addClass('blackCell');
+                    $('<img />', { src : spinnerUrl,
+                                   class : 'spinner',
+                                   style : 'display: none'
+                                 }).appendTo(gridCell);
                 } else {
                     $('<span />',
                       { text : cell.number === null ? '' : cell.number,

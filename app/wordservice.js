@@ -14,7 +14,11 @@ function matchWord (pattern, callback) {
             if (error) {
                 console.log(error);
             }
-            return callback(result.rows[0].word);
+            if (result.rows[0] !== undefined) {
+                return callback(result.rows[0].word);
+            } else {
+                return callback('');
+            }
         });
     });
 
@@ -35,10 +39,10 @@ function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize
             if (error) {
                 console.log(error);
             }
-            try {
+            if (result.rows[0] !== undefined) {
                 return callback(result.rows[0].wa, result.rows[0].wb);
-            } catch (e) {
-                console.log(e);
+            } else {
+                return callback('', '');
             }
         });
     });

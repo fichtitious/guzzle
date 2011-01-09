@@ -45,8 +45,9 @@
     float: right;
 }
 
-.black {
+.blackCell {
     background-color: black;
+    text-align: center;
 }
 
 .blue {
