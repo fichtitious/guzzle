@@ -38,6 +38,10 @@ $(function() {
         $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
     });
 
+    $('#spinner').live('click', function () {
+        doneWaiting();
+    });
+
     setUpKeyHandler();
 
 });
@@ -61,9 +65,11 @@ function helpWithWord (isAcross) {
                                     'intersectIdxA' : intersectIdxAcross,
                                     'intersectIdxB' : intersectIdxDown
                                   }, function (res) {
-                fillWord(res.wordA, slotAcross, true);
-                fillWord(res.wordB, slotDown, false);
-                doneWaiting();
+                if ($('#spinner').is(':visible')) { // if the request hasn't been cancelled
+                    fillWord(res.wordA, slotAcross, true);
+                    fillWord(res.wordB, slotDown, false);
+                    doneWaiting();
+                }
             });
         } else {
             var slot = findSlot(cell, isAcross);
@@ -77,30 +83,17 @@ function helpWithWord (isAcross) {
     }
 
     function fillWord (word, slot, isAcross) {
-        if (word == '') {
-            return;
-        }
-        for (i = 0; i < word.length; i++) {
-            var letter = word[i];
-            var gridCell = $('#cell' + (slot.startCoord[0] + (isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (isAcross ? i : 0)));
-            var cell = gridCell.data('cell');
-            if (cell.letter === null) {
-                gridCell.find('span.gridLetter').text(letter);
-                gridCell.addClass('tentative');
+        if (word != '') {
+            for (i = 0; i < word.length; i++) {
+                var letter = word[i];
+                var gridCell = $('#cell' + (slot.startCoord[0] + (isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (isAcross ? i : 0)));
+                var cell = gridCell.data('cell');
+                if (cell.letter === null) {
+                    gridCell.find('span.gridLetter').text(letter);
+                    gridCell.addClass('tentative');
+                }
             }
         }
-    }
-
-    function startWaiting (spin) {
-        $('.helpButton').attr('disabled', 'disabled');
-        if (spin) {
-            $('#spinner').show();
-        }
-    }
-
-    function doneWaiting () {
-        $('.helpButton').attr('disabled', '');
-        $('#spinner').hide();
     }
 
     function findSlot (cell, isAcross) {
@@ -125,6 +118,18 @@ function helpWithWord (isAcross) {
         }).join('');
     };
 
+}
+
+function startWaiting (spin) {
+    $('.helpButton').attr('disabled', 'disabled');
+    if (spin) {
+        $('#spinner').show();
+    }
+}
+
+function doneWaiting () {
+    $('.helpButton').attr('disabled', '');
+    $('#spinner').hide();
 }
 
 function setUpKeyHandler () {
