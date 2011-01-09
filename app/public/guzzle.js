@@ -47,6 +47,10 @@ $(function() {
         matchFocusedWord(false);
     });
 
+    $('#fillBothButton').live('click', function () {
+        matchFocusedWord();
+    });
+
     $('#commitHelpButton').live('click', function () {
         $('.tentative').each(function () {
             $(this).removeClass('tentative');
@@ -71,24 +75,49 @@ function matchFocusedWord (isAcross) {
     if (focusedGridCell !== null && !focusedGridCell.hasClass('black')) {
         var cell = focusedGridCell.data('cell');
         var puzzle = $('#puzzleContainer').data('puzzle');
-        var slot = puzzle.slots.filter(function (slot) {
+        if (isAcross === undefined) {
+            var slotAcross = findSlot(cell, true);
+            var slotDown = findSlot(cell, false);
+            var patternAcross = getQueryPattern(slotAcross, puzzle.grid);
+            var patternDown = getQueryPattern(slotDown, puzzle.grid);
+            var intersectIdxAcross = indexOfCell(slotAcross, cell);
+            var intersectIdxDown = indexOfCell(slotDown, cell);
+            $.post('/crossWords', { 'patternA' : patternAcross,
+                                    'patternB' : patternDown,
+                                    'intersectIdxA' : intersectIdxAcross,
+                                    'intersectIdxB' : intersectIdxDown
+                                  }, function (res) {
+                fillWord(res.wordA, slotAcross, true);
+                fillWord(res.wordB, slotDown, false);
+            });
+        } else {
+            var slot = findSlot(cell, isAcross);
+            var pattern = getQueryPattern(slot, puzzle.grid);
+            $.post('/matchWord', {'pattern' : pattern}, function (res) {
+                fillWord(res.word, slot, isAcross);
+            });
+        }
+    }
+
+    function findSlot (cell, isAcross) {
+        return puzzle.slots.filter(function (slot) {
             return indexOfCell(slot, cell) != -1 && slot.isAcross == isAcross;
         })[0];
-        var pattern = getQueryPattern(slot, puzzle.grid);
-        $.post('/matchWord', {'pattern' : pattern}, function (res) {
-            if (res.word === undefined) {
-                return;
+    }
+
+    function fillWord (word, slot, isAcross) {
+        if (word === undefined) {
+            return;
+        }
+        for (i = 0; i < word.length; i++) {
+            var letter = word[i];
+            var gridCell = $('#cell' + (slot.startCoord[0] + (isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (isAcross ? i : 0)));
+            var cell = gridCell.data('cell');
+            if (cell.letter === null) {
+                gridCell.find('span.gridLetter').text(letter);
+                gridCell.addClass('tentative');
             }
-            for (i = 0; i < res.word.length; i++) {
-                var letter = res.word[i];
-                var gridCell = $('#cell' + (slot.startCoord[0] + (isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (isAcross ? i : 0)));
-                var cell = gridCell.data('cell');
-                if (cell.letter === null) {
-                    gridCell.find('span.gridLetter').text(letter);
-                    gridCell.addClass('tentative');
-                }
-            }
-        });
+        }
     }
 
     function indexOfCell (slot, cell) {
@@ -201,6 +230,7 @@ function redrawPuzzle (puzzle) {
     function redrawHelpButtons(puzzleContainer) {
         $('<button />', {text : 'fill across', id : 'fillAcrossButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'fill down', id : 'fillDownButton'}).appendTo(puzzleContainer);
+        $('<button />', {text : 'fill both', id : 'fillBothButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'ok', id : 'commitHelpButton'}).appendTo(puzzleContainer);
         $('<button />', {text : 'no', id : 'rollbackHelpButton'}).appendTo(puzzleContainer);
     }
