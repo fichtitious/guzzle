@@ -6,7 +6,7 @@ var pg = require('pg'),
 
 function matchWord (pattern, callback) {
 
-    var query = "SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(pattern) + " ORDER BY random()";
+    var query = "SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(pattern) + " ORDER BY random() LIMIT 1";
     console.log(query);
 
     pg.connect(dburl, function (error, client) {
@@ -29,7 +29,7 @@ function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize
     var query = "WITH wordA AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternA) + ")," +
                 "     wordB AS (SELECT word FROM words.word WHERE " + lenEqualsAndPatternLike(patternB) + ") " +
                 "SELECT wordA.word AS wa, wordB.word AS wb " +
-                "FROM wordA JOIN wordB on SUBSTRING (wordA.word FROM " + intersectIdxA+1 + " FOR 1) = SUBSTRING (wordB.word FROM " + intersectIdxB+1 + " FOR 1) " +
+                "FROM wordA JOIN wordB on SUBSTRING (wordA.word FROM " + (intersectIdxA+1) + " FOR 1) = SUBSTRING (wordB.word FROM " + (intersectIdxB+1) + " FOR 1) " +
                 (randomize ? "ORDER BY random() " : "") +
                 "LIMIT 1";
     console.log(query);
