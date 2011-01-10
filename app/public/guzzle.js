@@ -262,8 +262,8 @@ function redrawPuzzle (puzzle) {
             return $(this).hasClass('blackCell');
         }).sort(distanceSorter(puzzle.size/2)).slice(0, 6).sort(distanceSorter(0));
 
-        [{'text' : 'A',  'id' : 'helpAcrossButton', 'idx' : 0},
-         {'text' : 'D',  'id' : 'helpDownButton', 'idx' : 1},
+        [{'text' : '→',  'id' : 'helpAcrossButton', 'idx' : 0},
+         {'text' : '↓',  'id' : 'helpDownButton', 'idx' : 1},
          {'text' : 'X',  'id' : 'helpBothButton', 'idx' : 2},
          {'text' : 'ok', 'id' : 'commitHelpButton', 'idx' : 3},
          {'text' : 'no', 'id' : 'rollbackHelpButton', 'idx' : 4}].forEach(function (button) {
