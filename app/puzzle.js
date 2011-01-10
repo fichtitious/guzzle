@@ -83,7 +83,7 @@ function createGrid (size) {
         }
     }
 
-    var numRemainingBlackCellsToAdd = size * 2;
+    var numRemainingBlackCellsToAdd = size * size / 6;
     var numRemainingRetries = 50;
     while (numRemainingBlackCellsToAdd > 1) {
         var rowIdx = Math.floor(Math.random() * size);
