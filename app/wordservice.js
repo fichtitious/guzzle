@@ -13,8 +13,8 @@ function matchWord (pattern, callback) {
         client.query(query, function (error, result) {
             if (error) {
                 console.log(error);
-            }
-            if (result.rows[0] !== undefined) {
+                return callback('');
+            } else if (result.rows[0] !== undefined) {
                 return callback(result.rows[0].word);
             } else {
                 return callback('');
@@ -38,8 +38,8 @@ function crossWords (patternA, patternB, intersectIdxA, intersectIdxB, randomize
         client.query(query, function (error, result) {
             if (error) {
                 console.log(error);
-            }
-            if (result.rows[0] !== undefined) {
+                return callback('', '');
+            } else if (result.rows[0] !== undefined) {
                 return callback(result.rows[0].wa, result.rows[0].wb);
             } else {
                 return callback('', '');
