@@ -84,13 +84,13 @@ function createGrid (size) {
     }
 
     var numRemainingBlackCellsToAdd = size * size / 6;
-    var numRemainingRetries = 50;
+    var numRemainingRetries = 500;
     while (numRemainingBlackCellsToAdd > 1) {
         var rowIdx = Math.floor(Math.random() * size);
         var colIdx = Math.floor(Math.random() * size);
         if (!grid[rowIdx][colIdx].isBlack) { // make this random cell black, if it's not already, and do the same to its rotational
             grid[rowIdx][colIdx].isBlack = grid[size-rowIdx-1][size-colIdx-1].isBlack = true; // inverse so that we get a symmetrical grid
-            if (numRemainingRetries > 0 && containsShortSlots(findSlots(grid, size))) {
+            if (numRemainingRetries > 0 && (containsShortSlots(findSlots(grid, size)) || blackAndWhiteNotIntermixedEnough(grid, size))) {
                 grid[rowIdx][colIdx].isBlack = grid[size-rowIdx-1][size-colIdx-1].isBlack = false;
                 numRemainingRetries--; // optimization: allow an immediate do-over if this last change would result in an invalid puzzle
             } else {
@@ -148,11 +148,17 @@ function isValid (grid, slots, size) {
         return false;
     }
 
+    // black and white should be well mixed
+    if (blackAndWhiteNotIntermixedEnough(grid, size)) {
+        console.log('rejecting puzzle because black and white are not intermixed enough');
+        return false;
+    }
+
     // puzzle shouldn't have too many long slots
     var longSlotLength = Math.floor(size * .9);
     var longSlots = slots.filter(function(slot) {return slot.size >= longSlotLength});
     var ratioLongSlots = longSlots.length / slots.length;
-    if (ratioLongSlots > .09) {
+    if (ratioLongSlots > .11) {
         console.log('rejecting puzzle because long-slots ratio is too high: ' + ratioLongSlots);
         return false;
     }
@@ -172,6 +178,42 @@ function containsShortSlots(slots) {
     return slots.some(function(slot) {
         return slot.size <= 2
     });
+}
+
+function blackAndWhiteNotIntermixedEnough (grid, size) {
+
+    for (rowIdx = 0; rowIdx < size; rowIdx++) {
+        for (colIdx = 0; colIdx < size; colIdx++) {
+            var neighbors = getNeighbors(grid[rowIdx][colIdx]);
+            var numBlackNeighbors =_.reduce(neighbors, function (sum, neighbor) {return sum + neighbor}, 0);
+            if (numBlackNeighbors >= 4 ||
+                neighbors[1] + neighbors[5] == 2 ||
+                neighbors[3] + neighbors[7] == 2 ||
+                neighbors[3] + neighbors[4] + neighbors[5] == 3) {
+                return true;
+            }
+        }
+    }
+    return false;
+
+    function getNeighbors (cell) {
+        var neighbors = [];
+        [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]].forEach(function (incr) {
+            var row = grid[cell.rowIdx+incr[0]];
+            if (row !== undefined) {
+                var neighbor = row[cell.colIdx+incr[1]];
+                if (neighbor !== undefined && neighbor.isBlack) {
+                    neighbors.push(1);
+                } else {
+                    neighbors.push(0);
+                }
+            } else {
+                neighbors.push(0);
+            }
+        });
+        return neighbors;
+    }
+
 }
 
 function addWordNumbering (grid, slots, size) {
