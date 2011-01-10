@@ -21,6 +21,7 @@ $(function() {
     });
 
     $('#commitHelpButton').live('click', function () {
+        doneWaiting();
         $('.tentative').each(function () {
             $(this).removeClass('tentative');
             $(this).data('cell').letter = $(this).find('span.gridLetter').text();
@@ -28,6 +29,7 @@ $(function() {
     });
 
     $('#rollbackHelpButton').live('click', function () {
+        doneWaiting();
         $('.tentative').each(function () {
             $(this).removeClass('tentative');
             $(this).find('span.gridLetter').text('');
