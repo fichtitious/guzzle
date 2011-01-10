@@ -11,7 +11,8 @@
 
 #cluesContainer {
     float: left;
-    -khtml-user-select: none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
 }
 
 #acrossCluesContainer {
@@ -26,7 +27,8 @@
 
 #newPuzzleControls {
     float: right;
-    -khtml-user-select: none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
 }
 
 .gridCell {
@@ -34,7 +36,8 @@
     border-width: 0 1px 1px 0;
     float: left;
     text-align: center;
-    -khtml-user-select: none;
+    -webkit-user-select:none;
+    -moz-user-select:none;
 }
 
 .focusedGridCell {
