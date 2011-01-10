@@ -1,11 +1,11 @@
 $(function() {
 
-    $('#newEmptyPuzzleButton').click(function () {
-        $.post('newEmptyPuzzle', {'newPuzzleSize' : $('#newPuzzleSize').val()},
-            function (res) {
+    [11, 15, 23].forEach(function (size) {
+        $('<button />', {text : 'new '+size+' x '+size}).click(function () {
+            $.post('newEmptyPuzzle', {'newPuzzleSize' : size}, function (res) {
                 redrawPuzzle(res.puzzle);
-            }
-        );
+            });
+        }).appendTo($('#newPuzzleControls'));
     });
 
     $('#helpAcrossButton').live('click', function () {
@@ -145,8 +145,10 @@ function setUpKeyHandler () {
     });
 
     $('.gridCell').live('click', function (event) {
-        $('.focusedGridCell').removeClass('focusedGridCell');
-        $(event.currentTarget).addClass('focusedGridCell');
+        if (!$(event.currentTarget).hasClass('blackCell')) {
+            $('.focusedGridCell').removeClass('focusedGridCell');
+            $(event.currentTarget).addClass('focusedGridCell');
+        }
     });
 
     var lastMoveDown, lastMoveRight = null;
@@ -209,42 +211,23 @@ function getFocusedGridCell () {
 function redrawPuzzle (puzzle) {
 
     var puzzleContainer = redrawPuzzleContainer('body');
-    redrawHelpButtons(puzzleContainer);
-    var gridContainer = redrawGridContainer(puzzleContainer);
-    redrawGridCells(gridContainer);
+    redrawGridCells(puzzleContainer);
+    redrawHelpButtons();
     var cluesContainer = redrawCluesContainer();
     redrawClues(cluesContainer);
 
     function redrawPuzzleContainer(topContainer) {
         $('#puzzleContainer').remove();
-        var puzzleContainer = $('<div />', {id : 'puzzleContainer'}).appendTo(topContainer);
+        var puzzleContainer =  $('<div />',
+            { width : 40 * puzzle.size,
+              height : 40 * puzzle.size,
+              id : 'puzzleContainer'
+            }).prependTo(topContainer);
         puzzleContainer.data('puzzle', puzzle);
         return puzzleContainer;
     }
 
-    function redrawHelpButtons(puzzleContainer) {
-        $('<button />', {text : 'help across', id : 'helpAcrossButton', class : 'helpButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'help down', id : 'helpDownButton', class : 'helpButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'help both', id : 'helpBothButton', class : 'helpButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'ok', id : 'commitHelpButton'}).appendTo(puzzleContainer);
-        $('<button />', {text : 'no', id : 'rollbackHelpButton'}).appendTo(puzzleContainer);
-        $('<img />', { src : 'spinners/' + Math.ceil(Math.random()*5) + '.gif',
-                       id : 'spinner',
-                       style : 'display: none'
-                     }).appendTo(puzzleContainer);
-    }
-
-    function redrawGridContainer(puzzleContainer) {
-        var gridContainer = $('<div />',
-            { width : 40 * puzzle.size,
-              height : 40 * puzzle.size,
-              class : 'gridContainer',
-              id : 'gridContainer'
-            }).appendTo(puzzleContainer);
-        return gridContainer;
-    }
-
-    function redrawGridCells(gridContainer) {
+    function redrawGridCells(puzzleContainer) {
         for (var rowIdx = 0; rowIdx < puzzle.size; rowIdx++) {
             for (var colIdx = 0; colIdx < puzzle.size; colIdx++) {
                 var gridCell = $('<div />',
@@ -253,7 +236,7 @@ function redrawPuzzle (puzzle) {
                       class : 'gridCell',
                       id : 'cell' + rowIdx + '-' + colIdx,
                       value : rowIdx + '-' + colIdx
-                    }).appendTo(gridContainer);
+                    }).appendTo(puzzleContainer);
 
                 var cell = puzzle.grid[rowIdx][colIdx];
                 gridCell.data('cell', cell);
@@ -273,11 +256,43 @@ function redrawPuzzle (puzzle) {
         }
     }
 
+    function redrawHelpButtons() {
+
+        var buttonContainers = $('.gridCell').filter(function () {
+            return $(this).hasClass('blackCell');
+        }).sort(distanceSorter(puzzle.size/2)).slice(0, 6).sort(distanceSorter(0));
+
+        [{'text' : 'A',  'id' : 'helpAcrossButton', 'idx' : 0},
+         {'text' : 'D',  'id' : 'helpDownButton', 'idx' : 1},
+         {'text' : 'X',  'id' : 'helpBothButton', 'idx' : 2},
+         {'text' : 'ok', 'id' : 'commitHelpButton', 'idx' : 3},
+         {'text' : 'no', 'id' : 'rollbackHelpButton', 'idx' : 4}].forEach(function (button) {
+            $('<div />', { text : button.text,
+                           id : button.id,
+                           class : 'helpButton'
+                         }).appendTo($(buttonContainers[button.idx]));
+        });
+        $('<img />', { src : 'spinners/' + Math.ceil(Math.random()*5) + '.gif',
+                       id : 'spinner',
+                     }).appendTo($(buttonContainers[5]));
+
+        function distanceSorter (origin) {
+            return function (gridCellA, gridCellB) {
+                return distance(gridCellA) > distance(gridCellB) ? 1 : -1;
+                function distance (gridCell) {
+                    var rowIdx = parseInt($(gridCell).attr('value').split('-')[0]);
+                    var colIdx = parseInt($(gridCell).attr('value').split('-')[1]);
+                    return Math.sqrt(Math.pow(origin - rowIdx, 2) + Math.pow(origin - colIdx, 2));
+                }
+            };
+        }
+
+    }
+
     function redrawCluesContainer() {
         $('#cluesContainer').remove();
         var cluesContainer = $('<div />',
           { id : 'cluesContainer',
-            class : 'cluesContainer'
           }).appendTo('body');
         return cluesContainer;
     }
@@ -292,7 +307,6 @@ function redrawPuzzle (puzzle) {
          {'containerId' : 'downCluesContainer',   'containerTitle' : 'Down',   'isAcross' : false}].forEach(function (container) {
             var subCluesContainer = $('<div />',
               { id : container.containerId,
-                class : container.containerId,
                 text : container.containerTitle
               }).appendTo(cluesContainer);
             puzzle.slots.forEach(function (slot) {

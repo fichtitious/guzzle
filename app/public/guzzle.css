@@ -1,13 +1,40 @@
-.gridContainer {
+#puzzleContainer {
     border: 1px solid #ccc;
     border-width: 1px 0 0 1px;
     float: left;
+}
+
+#spinner {
+    display: none;
+    padding-top: 7px;
+}
+
+#cluesContainer {
+    float: left;
+    -khtml-user-select: none;
+}
+
+#acrossCluesContainer {
+    padding: 10px;
+    float: left;
+}
+
+#downCluesContainer {
+    padding: 10px;
+    float: right;
+}
+
+#newPuzzleControls {
+    float: right;
+    -khtml-user-select: none;
 }
 
 .gridCell {
     border: 1px solid #ccc;
     border-width: 0 1px 1px 0;
     float: left;
+    text-align: center;
+    -khtml-user-select: none;
 }
 
 .focusedGridCell {
@@ -21,28 +48,15 @@
 }
 
 .gridLetter {
-    font-size: 1.1em;
+    font-size: 1.4em;
+    font-family: monospace;
     float: right;
     padding-right: 13px;
-    padding-top: 9px;
+    padding-top: 10px;
 }
 
 .tentative {
-    color: gray;
-}
-
-.cluesContainer {
-    float: left;
-}
-
-.acrossCluesContainer {
-    padding: 10px;
-    float: left;
-}
-
-.downCluesContainer {
-    padding: 10px;
-    float: right;
+    color: #989898;
 }
 
 .blackCell {
@@ -51,4 +65,12 @@
 
 .blue {
     background-color: blue;
+}
+
+.helpButton {
+    color: white;
+    font-size: 1.6em;
+    font-family: monospace;
+    font-weight: bold;
+    padding-top: 7px;
 }
