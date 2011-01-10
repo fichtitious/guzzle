@@ -166,7 +166,7 @@ function setUpKeyHandler () {
 
             if (event.which == 37) {
                 refocus(focused, 0, -1);
-            } else if (event.which == 39) {
+            } else if (event.which == 39 || event.which == 9) {
                 refocus(focused, 0, 1);
             } else if (event.which == 38) {
                 refocus(focused, -1, 0);
