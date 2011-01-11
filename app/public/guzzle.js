@@ -50,9 +50,9 @@ $(function() {
 
 function helpWithWord (isAcross) {
 
-    var focusedGridCell = getFocusedGridCell();
-    if (focusedGridCell !== null && !focusedGridCell.hasClass('blackCell')) {
-        var cell = focusedGridCell.data('cell');
+    var focused = findFocusedGridCell();
+    if (focused !== null && !focused.hasClass('blackCell')) {
+        var cell = focused.data('cell');
         var puzzle = $('#puzzleContainer').data('puzzle');
         if (isAcross === undefined) {
             var slotAcross = puzzle.slotContaining(cell, true);
@@ -110,19 +110,19 @@ function doneWaiting () {
 function setUpKeyHandler () {
 
     $('#puzzleContainer').live('mouseenter', function () {
-        $('#puzzleContainer').addClass('focused');
-        $('.suspendedFocusedGridCell').addClass('focusedGridCell');
-        $('.suspendedFocusedGridCell').removeClass('suspendedFocusedGridCell');
+        $('#puzzleContainer').addClass('puzzleFocused');
+        $('.suspendedFocus').addClass('focused');
+        $('.suspendedFocus').removeClass('suspendedFocus');
     }).live('mouseleave', function () {
-        $('#puzzleContainer').removeClass('focused');
-        $('.focusedGridCell').addClass('suspendedFocusedGridCell');
-        $('.focusedGridCell').removeClass('focusedGridCell');
+        $('#puzzleContainer').removeClass('puzzleFocused');
+        $('.focused').addClass('suspendedFocus');
+        $('.focused').removeClass('focused');
     });
 
     $('.gridCell').live('click', function (event) {
         if (!$(event.currentTarget).hasClass('blackCell')) {
-            $('.focusedGridCell').removeClass('focusedGridCell');
-            $(event.currentTarget).addClass('focusedGridCell');
+            $('.focused').removeClass('focused');
+            $(event.currentTarget).addClass('focused');
         }
     });
 
@@ -132,8 +132,8 @@ function setUpKeyHandler () {
 
     function handleKey (event) {
 
-        var focused = getFocusedGridCell();
-        if (focused !== null && $('#puzzleContainer').hasClass('focused')) {
+        var focused = findFocusedGridCell();
+        if (focused !== null && $('#puzzleContainer').hasClass('puzzleFocused')) {
 
             event.preventDefault();
 
@@ -169,8 +169,8 @@ function setUpKeyHandler () {
         var colIdx = parseInt(current.attr('value').split('-')[1]);
         var newFocus = $('#cell' + (rowIdx+moveDown) + '-' + (colIdx+moveRight));
         if (newFocus.length > 0 && (avoidBlack === undefined || !newFocus.hasClass('blackCell'))) {
-            $('.focusedGridCell').removeClass('focusedGridCell');
-            newFocus.addClass('focusedGridCell');
+            $('.focused').removeClass('focused');
+            newFocus.addClass('focused');
             lastMoveDown = moveDown;
             lastMoveRight = moveRight;
         }
@@ -178,9 +178,11 @@ function setUpKeyHandler () {
 
 }
 
-function getFocusedGridCell () {
-    var focused = $($('.focusedGridCell')[0]);
+function findFocusedGridCell () {
+
+    var focused = $($('.focused')[0]);
     return focused.length > 0 ? focused : null;
+
 }
 
 function redrawPuzzle (puzzle) {

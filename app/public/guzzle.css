@@ -40,7 +40,7 @@
     -moz-user-select:none;
 }
 
-.focusedGridCell {
+.focused {
     outline-style: dashed;
 }
 
