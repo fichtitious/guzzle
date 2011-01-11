@@ -130,7 +130,7 @@ function isValid (grid, slots, size) {
 
 }
 
-function containsShortSlots(slots) {
+function containsShortSlots (slots) {
     return slots.some(function(slot) {
         return slot.size <= 2
     });

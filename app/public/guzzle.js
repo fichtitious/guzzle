@@ -55,40 +55,35 @@ function helpWithWord (isAcross) {
         var cell = focusedGridCell.data('cell');
         var puzzle = $('#puzzleContainer').data('puzzle');
         if (isAcross === undefined) {
-            var slotAcross = findSlot(cell, true);
-            var slotDown = findSlot(cell, false);
-            var patternAcross = getQueryPattern(slotAcross, puzzle.grid);
-            var patternDown = getQueryPattern(slotDown, puzzle.grid);
-            var intersectIdxAcross = indexOfCell(slotAcross, cell);
-            var intersectIdxDown = indexOfCell(slotDown, cell);
+            var slotAcross = puzzle.slotContaining(cell, true);
+            var slotDown = puzzle.slotContaining(cell, false);
             startWaiting(true);
-            $.post('/crossWords', { 'patternA' : patternAcross,
-                                    'patternB' : patternDown,
-                                    'intersectIdxA' : intersectIdxAcross,
-                                    'intersectIdxB' : intersectIdxDown
+            $.post('/crossWords', { 'patternA' : slotAcross.getQueryPattern(puzzle.grid),
+                                    'patternB' : slotDown.getQueryPattern(puzzle.grid),
+                                    'intersectIdxA' : slotAcross.indexOfCell(cell),
+                                    'intersectIdxB' : slotDown.indexOfCell(cell)
                                   }, function (res) {
                 if ($('#spinner').is(':visible')) { // if the request hasn't been cancelled
-                    fillWord(res.wordA, slotAcross, true);
-                    fillWord(res.wordB, slotDown, false);
+                    fillSlot(slotAcross, res.wordA);
+                    fillSlot(slotDown, res.wordB);
                     doneWaiting();
                 }
             });
         } else {
-            var slot = findSlot(cell, isAcross);
-            var pattern = getQueryPattern(slot, puzzle.grid);
+            var slot = puzzle.slotContaining(cell, isAcross);
             startWaiting(false);
-            $.post('/matchWord', {'pattern' : pattern}, function (res) {
-                fillWord(res.word, slot, isAcross);
+            $.post('/matchWord', {'pattern' : slot.getQueryPattern(puzzle.grid)}, function (res) {
+                fillSlot(slot, res.word);
                 doneWaiting();
             });
         }
     }
 
-    function fillWord (word, slot, isAcross) {
+    function fillSlot (slot, word) {
         if (word != '') {
             for (i = 0; i < word.length; i++) {
                 var letter = word[i];
-                var gridCell = $('#cell' + (slot.startCoord[0] + (isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (isAcross ? i : 0)));
+                var gridCell = $('#cell' + (slot.startCoord[0] + (slot.isAcross ? 0 : i)) + '-' + (slot.startCoord[1] + (slot.isAcross ? i : 0)));
                 var cell = gridCell.data('cell');
                 if (cell.letter === null) {
                     gridCell.find('span.gridLetter').text(letter);
@@ -97,28 +92,6 @@ function helpWithWord (isAcross) {
             }
         }
     }
-
-    function findSlot (cell, isAcross) {
-        return puzzle.slots.filter(function (slot) {
-            return indexOfCell(slot, cell) != -1 && slot.isAcross == isAcross;
-        })[0];
-    }
-
-    function indexOfCell (slot, cell) {
-        for (i = 0; i < slot.size; i++) {
-            if (_.isEqual([cell.rowIdx, cell.colIdx], slot.coords[i])) {
-                return i;
-            }
-        }
-        return -1;
-    };
-
-    function getQueryPattern (slot, grid) {
-        return slot.coords.map(function (coord) {
-            var cell = grid[coord[0]][coord[1]];
-            return cell.letter === null ? '_' : cell.letter;
-        }).join('');
-    };
 
 }
 
@@ -213,6 +186,7 @@ function getFocusedGridCell () {
 function redrawPuzzle (puzzle) {
 
     var puzzleContainer = redrawPuzzleContainer('body');
+    puzzleContainer.data('puzzle', puzzle);
     redrawGridCells(puzzleContainer);
     redrawHelpButtons();
     var cluesContainer = redrawCluesContainer();
@@ -225,7 +199,6 @@ function redrawPuzzle (puzzle) {
               height : 40 * puzzle.size,
               id : 'puzzleContainer'
             }).prependTo(topContainer);
-        puzzleContainer.data('puzzle', puzzle);
         return puzzleContainer;
     }
 
@@ -302,7 +275,7 @@ function redrawPuzzle (puzzle) {
     function redrawClues(cluesContainer) {
 
         puzzle.slots.sort(function (slotA, slotB) {
-            return cellAt(puzzle, slotA).number > cellAt(puzzle, slotB).number ? 1 : -1;
+            return puzzle.cellAtStartOf(slotA).number > puzzle.cellAtStartOf(slotB).number ? 1 : -1;
         });
 
         [{'containerId' : 'acrossCluesContainer', 'containerTitle' : 'Across', 'isAcross' : true},
@@ -315,7 +288,7 @@ function redrawPuzzle (puzzle) {
                 if (slot.isAcross == container.isAcross) {
                     var clue = $('<div />').appendTo(subCluesContainer);
                     $('<span />',
-                      { text : cellAt(puzzle, slot).number,
+                      { text : puzzle.cellAtStartOf(slot).number,
                         class : 'clueNumber'
                       }).appendTo(clue)
                         .data('gridCellId', 'cell' + slot.startCoord[0] + '-' + slot.startCoord[1]);
@@ -323,9 +296,6 @@ function redrawPuzzle (puzzle) {
             });
         });
 
-        function cellAt(puzzle, slot) {
-            return puzzle.grid[slot.startCoord[0]][slot.startCoord[1]];
-        }
     }
 
 }

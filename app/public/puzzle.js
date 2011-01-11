@@ -32,6 +32,16 @@ function Puzzle (json) {
 
     }
 
+    this.slotContaining = function (cell, isAcross) {
+        return this.slots.filter(function (slot) {
+            return slot.indexOfCell(cell) != -1 && slot.isAcross == isAcross;
+        })[0];
+    }
+
+    this.cellAtStartOf = function (slot) {
+        return this.grid[slot.startCoord[0]][slot.startCoord[1]];
+    }
+
 }
 
 function Slot (startCoord, size, isAcross) {
@@ -60,17 +70,6 @@ function Slot (startCoord, size, isAcross) {
             var cell = grid[coord[0]][coord[1]];
             return cell.letter === null ? '_' : cell.letter;
         }).join('');
-    };
-
-    this.fillIn = function (word, grid) {
-        var letters = word.split('');
-        for (i = 0; i < this.size; i++) {
-            var coord = this.coords[i];
-            var cell = grid[coord[0]][coord[1]];
-            if (cell.letter === null) {
-                cell.letter = letters[i];
-            }
-        }
     };
 
 }
