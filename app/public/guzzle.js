@@ -3,9 +3,39 @@ $(function() {
     [11, 15, 23].forEach(function (size) {
         $('<button />', {text : 'new '+size+' x '+size}).click(function () {
             $.post('newEmptyPuzzle', {'newPuzzleSize' : size}, function (res) {
+                $('#puzzleTitle').text('Unsaved Puzzle');
                 redrawPuzzle(new Puzzle(res.puzzle));
             });
         }).appendTo($('#newPuzzleControls'));
+    });
+
+    $('#savePuzzleButton').click(function () {
+        var puzzle = $('#puzzleContainer').data('puzzle');
+        if (puzzle !== undefined) {
+            $.post('savePuzzle', {'id' : puzzle.id, 'puzzle' : JSON.stringify(puzzle)}, function (res) {
+                flashMessage(res.success ? 'saved puzzle ' + res.id : 'failed to save!');
+                if (res.success) {
+                    $('#puzzleTitle').text('Puzzle ' + res.id);
+                    $('#puzzleContainer').data('puzzle').id = res.id;
+                }
+            });
+        }
+    });
+
+    $('#loadPuzzleButton').click(function () {
+        var id = $('#requestedPuzzle').val();
+        if (id) {
+            $.post('getPuzzle', {'id' : id}, function (res) {
+                if (res.puzzle != '') {
+                    $('#puzzleTitle').text('Puzzle ' + id);
+                    var puzzle = new Puzzle(JSON.parse(res.puzzle));
+                    puzzle.id = id;
+                    redrawPuzzle(puzzle);
+                } else {
+                    flashMessage('sorry, no puzzle with id ' + id);
+                }
+            });
+        }
     });
 
     $('#helpAcrossButton').live('click', function () {
@@ -299,5 +329,14 @@ function redrawPuzzle (puzzle) {
         });
 
     }
+
+}
+
+function flashMessage (msg) {
+
+    $('#saveLoadSuccess').text(msg);
+    setTimeout(function () {
+        $('#saveLoadSuccess').text('');
+    }, 2000);
 
 }

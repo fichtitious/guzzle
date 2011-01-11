@@ -31,6 +31,17 @@
     -moz-user-select:none;
 }
 
+#puzzleTitle {
+    font-size: 1.7em;
+    font-family: monospace;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+}
+
+.saveLoad {
+    float: right;
+}
+
 .gridCell {
     border: 1px solid #ccc;
     border-width: 0 1px 1px 0;

@@ -1,4 +1,5 @@
 var express = require('express'),
+    puzzleservice = require('./puzzleservice'),
     gridservice = require('./gridservice'),
     wordservice = require('./wordservice'),
     app = express.createServer(),
@@ -28,6 +29,18 @@ app.post('/crossWords', function (req, res) {
 
 app.post('/newEmptyPuzzle', function (req, res) {
     res.send({'puzzle' : gridservice.newPuzzle(req.body.newPuzzleSize)});
+});
+
+app.post('/savePuzzle', function (req, res) {
+    puzzleservice.save(req.body.id, req.body.puzzle, function (id, success) {
+        res.send({'id' : id, 'success' : success});
+    });
+});
+
+app.post('/getPuzzle', function (req, res) {
+    puzzleservice.get(parseInt(req.body.id), function (puzzle) {
+        res.send({'puzzle' : puzzle});
+    });
 });
 
 app.listen(port);

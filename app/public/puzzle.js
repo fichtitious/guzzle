@@ -9,12 +9,14 @@ if (typeof module !== 'undefined') {
 
 function Puzzle (json) {
 
+    this.id;
     this.size;
     this.grid;
     this.slots;
 
     if (json !== undefined) {
 
+        this.id = json.id;
         this.size = json.size;
 
         this.grid = new Array(this.size);
