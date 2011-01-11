@@ -1,5 +1,5 @@
 var express = require('express'),
-    puzzle = require('./puzzle'),
+    gridservice = require('./gridservice'),
     wordservice = require('./wordservice'),
     app = express.createServer(),
     port = process.argv[2];
@@ -27,7 +27,7 @@ app.post('/crossWords', function (req, res) {
 });
 
 app.post('/newEmptyPuzzle', function (req, res) {
-    res.send({'puzzle' : new puzzle.Puzzle(req.body.newPuzzleSize)});
+    res.send({'puzzle' : gridservice.newPuzzle(req.body.newPuzzleSize)});
 });
 
 app.listen(port);

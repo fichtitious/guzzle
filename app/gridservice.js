@@ -1,76 +1,32 @@
-exports.Puzzle = Puzzle;
+exports.newPuzzle = newPuzzle;
 
-var _ = require('./public/lib/underscore-min');
+var _ = require('./public/lib/underscore-min'),
+    Puzzle = require('./public/puzzle').Puzzle,
+    Slot = require('./public/puzzle').Slot,
+    Cell = require('./public/puzzle').Cell;
 
-function Puzzle (size) {
+function newPuzzle (size) {
 
-    this.size = size;
-    this.numAttemptsToGenerate = 0;
+    numAttemptsToGenerate = 0;
 
     while (true) {
-        this.numAttemptsToGenerate++;
+        numAttemptsToGenerate++;
         var grid = createGrid(size);
         var slots = findSlots(grid, size);
         if (isValid(grid, slots, size)) {
             addWordNumbering(grid, slots, size);
-            this.grid = grid;
-            this.slots = slots;
             break;
-        } else if (this.numAttemptsToGenerate > 200) {
+        } else if (numAttemptsToGenerate > 200) {
             break;
         }
     }
 
-}
+    var puzzle = new Puzzle();
+    puzzle.size = size;
+    puzzle.grid = grid;
+    puzzle.slots = slots;
+    return puzzle;
 
-function Slot (startCoord, size, isAcross) {
-
-    this.startCoord = startCoord;
-    this.size = size;
-    this.isAcross = isAcross;
-    this.isDown = !isAcross;
-
-    this.coords = [];
-    for (i = 0; i < this.size; i++) {
-        this.coords.push([this.startCoord[0] + (this.isAcross ? 0 : i),
-                          this.startCoord[1] + (this.isAcross ? i : 0)]);
-    }
-
-    this.indexOfCell = function (cell) {
-        for (i = 0; i < this.size; i++) {
-            if (_.isEqual([cell.rowIdx, cell.colIdx], this.coords[i])) {
-                return i;
-            }
-        }
-        return -1;
-    };
-
-    this.getQueryPattern = function (grid) {
-        return this.coords.map(function (coord) {
-            var cell = grid[coord[0]][coord[1]];
-            return cell.letter === null ? '_' : cell.letter;
-        }).join('');
-    };
-
-    this.fillIn = function (word, grid) {
-        var letters = word.split('');
-        for (i = 0; i < this.size; i++) {
-            var coord = this.coords[i];
-            var cell = grid[coord[0]][coord[1]];
-            if (cell.letter === null) {
-                cell.letter = letters[i];
-            }
-        }
-    };
-
-}
-
-function Cell (rowIdx, colIdx) {
-    this.rowIdx = rowIdx;
-    this.colIdx = colIdx;
-    this.isBlack = false;
-    this.letter = null;
-    this.number = null;
 }
 
 function createGrid (size) {
@@ -79,7 +35,7 @@ function createGrid (size) {
     for (rowIdx = 0; rowIdx < size; rowIdx++) {
         grid[rowIdx] = new Array(size);
         for (colIdx = 0; colIdx < size; colIdx++) {
-            grid[rowIdx][colIdx] = new Cell(rowIdx, colIdx);
+            grid[rowIdx][colIdx] = new Cell(rowIdx, colIdx, false, null, null);
         }
     }
 

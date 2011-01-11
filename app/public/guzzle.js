@@ -3,7 +3,7 @@ $(function() {
     [11, 15, 23].forEach(function (size) {
         $('<button />', {text : 'new '+size+' x '+size}).click(function () {
             $.post('newEmptyPuzzle', {'newPuzzleSize' : size}, function (res) {
-                redrawPuzzle(res.puzzle);
+                redrawPuzzle(new Puzzle(res.puzzle));
             });
         }).appendTo($('#newPuzzleControls'));
     });
