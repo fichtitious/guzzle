@@ -34,12 +34,12 @@
 #puzzleTitle {
     font-size: 1.7em;
     font-family: monospace;
-    -webkit-user-select:none;
-    -moz-user-select:none;
 }
 
 .saveLoad {
     float: right;
+    -webkit-user-select:none;
+    -moz-user-select:none;
 }
 
 .gridCell {
