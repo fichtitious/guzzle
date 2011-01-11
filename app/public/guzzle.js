@@ -58,8 +58,8 @@ function helpWithWord (isAcross) {
             var slotAcross = puzzle.slotContaining(cell, true);
             var slotDown = puzzle.slotContaining(cell, false);
             startWaiting(true);
-            $.post('/crossWords', { 'patternA' : slotAcross.getQueryPattern(puzzle.grid),
-                                    'patternB' : slotDown.getQueryPattern(puzzle.grid),
+            $.post('/crossWords', { 'patternA' : puzzle.getQueryPattern(slotAcross),
+                                    'patternB' : puzzle.getQueryPattern(slotDown),
                                     'intersectIdxA' : slotAcross.indexOfCell(cell),
                                     'intersectIdxB' : slotDown.indexOfCell(cell)
                                   }, function (res) {
@@ -72,7 +72,7 @@ function helpWithWord (isAcross) {
         } else {
             var slot = puzzle.slotContaining(cell, isAcross);
             startWaiting(false);
-            $.post('/matchWord', {'pattern' : slot.getQueryPattern(puzzle.grid)}, function (res) {
+            $.post('/matchWord', {'pattern' : puzzle.getQueryPattern(slot)}, function (res) {
                 fillSlot(slot, res.word);
                 doneWaiting();
             });

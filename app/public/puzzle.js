@@ -42,6 +42,14 @@ function Puzzle (json) {
         return this.grid[slot.startCoord[0]][slot.startCoord[1]];
     }
 
+    this.getQueryPattern = function (slot) {
+        var self = this;
+        return slot.coords.map(function (coord) {
+            var cell = self.grid[coord[0]][coord[1]];
+            return cell.letter === null ? '_' : cell.letter;
+        }).join('');
+    };
+
 }
 
 function Slot (startCoord, size, isAcross) {
@@ -63,13 +71,6 @@ function Slot (startCoord, size, isAcross) {
             }
         }
         return -1;
-    };
-
-    this.getQueryPattern = function (grid) {
-        return this.coords.map(function (coord) {
-            var cell = grid[coord[0]][coord[1]];
-            return cell.letter === null ? '_' : cell.letter;
-        }).join('');
     };
 
 }
