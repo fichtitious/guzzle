@@ -24,12 +24,12 @@ function Puzzle (json) {
             this.grid[rowIdx] = new Array(this.size);
             for (colIdx = 0; colIdx < this.size; colIdx++) {
                 var cellJSON = json.grid[rowIdx][colIdx];
-                this.grid[rowIdx][colIdx] = new Cell(cellJSON.rowIdx, cellJSON.colIdx, cellJSON.isBlack, cellJSON.letter, cellJSON.number);
+                this.grid[rowIdx][colIdx] = new Cell(cellJSON.rowIdx, cellJSON.colIdx, cellJSON.isBlack, cellJSON.letter);
             }
         }
 
         this.slots = json.slots.map(function (slotJSON) {
-            return new Slot(slotJSON.startCoord, slotJSON.size, slotJSON.isAcross);
+            return new Slot(slotJSON.startCoord, slotJSON.size, slotJSON.isAcross, slotJSON.number, slotJSON.clue);
         });
 
     }
@@ -38,10 +38,6 @@ function Puzzle (json) {
         return this.slots.filter(function (slot) {
             return slot.indexOfCell(cell) != -1 && slot.isAcross == isAcross;
         })[0];
-    }
-
-    this.cellAtStartOf = function (slot) {
-        return this.grid[slot.startCoord[0]][slot.startCoord[1]];
     }
 
     this.getQueryPattern = function (slot) {
@@ -54,11 +50,13 @@ function Puzzle (json) {
 
 }
 
-function Slot (startCoord, size, isAcross) {
+function Slot (startCoord, size, isAcross, number, clue) {
 
     this.startCoord = startCoord;
     this.size = size;
     this.isAcross = isAcross;
+    this.number = number;
+    this.clue = clue;
 
     this.coords = [];
     for (i = 0; i < this.size; i++) {
@@ -77,12 +75,11 @@ function Slot (startCoord, size, isAcross) {
 
 }
 
-function Cell (rowIdx, colIdx, isBlack, letter, number) {
+function Cell (rowIdx, colIdx, isBlack, letter) {
 
     this.rowIdx = rowIdx;
     this.colIdx = colIdx;
     this.isBlack = isBlack;
     this.letter = letter;
-    this.number = number;
 
 }

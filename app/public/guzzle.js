@@ -225,6 +225,7 @@ function redrawPuzzle (puzzle) {
     redrawClues(cluesContainer);
 
     function redrawPuzzleContainer(topContainer) {
+
         $('#puzzleContainer').remove();
         var puzzleContainer =  $('<div />',
             { width : 40 * puzzle.size,
@@ -232,9 +233,11 @@ function redrawPuzzle (puzzle) {
               id : 'puzzleContainer'
             }).prependTo(topContainer);
         return puzzleContainer;
+
     }
 
     function redrawGridCells(puzzleContainer) {
+
         for (var rowIdx = 0; rowIdx < puzzle.size; rowIdx++) {
             for (var colIdx = 0; colIdx < puzzle.size; colIdx++) {
                 var gridCell = $('<div />',
@@ -251,8 +254,7 @@ function redrawPuzzle (puzzle) {
                     gridCell.addClass('blackCell');
                 } else {
                     $('<span />',
-                      { text : cell.number === null ? '' : cell.number,
-                        class : 'gridNumber'
+                      { class : 'gridNumber'
                       }).appendTo(gridCell);
                     $('<span />',
                       { text : cell.letter === null ? '' : cell.letter,
@@ -261,6 +263,11 @@ function redrawPuzzle (puzzle) {
                 }
             }
         }
+
+        puzzle.slots.forEach(function (slot) {
+            $('#cell' + slot.startCoord[0] + '-' + slot.startCoord[1]).find('span.gridNumber').text(slot.number);
+        });
+
     }
 
     function redrawHelpButtons() {
@@ -297,17 +304,19 @@ function redrawPuzzle (puzzle) {
     }
 
     function redrawCluesContainer() {
+
         $('#cluesContainer').remove();
         var cluesContainer = $('<div />',
           { id : 'cluesContainer',
           }).appendTo('body');
         return cluesContainer;
+
     }
 
     function redrawClues(cluesContainer) {
 
         puzzle.slots.sort(function (slotA, slotB) {
-            return puzzle.cellAtStartOf(slotA).number > puzzle.cellAtStartOf(slotB).number ? 1 : -1;
+            return slotA.number > slotB.number ? 1 : -1;
         });
 
         [{'containerId' : 'acrossCluesContainer', 'containerTitle' : 'Across', 'isAcross' : true},
@@ -320,7 +329,7 @@ function redrawPuzzle (puzzle) {
                 if (slot.isAcross == container.isAcross) {
                     var clue = $('<div />').appendTo(subCluesContainer);
                     $('<span />',
-                      { text : puzzle.cellAtStartOf(slot).number,
+                      { text : slot.number,
                         class : 'clueNumber'
                       }).appendTo(clue)
                         .data('gridCellId', 'cell' + slot.startCoord[0] + '-' + slot.startCoord[1]);

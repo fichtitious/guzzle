@@ -14,7 +14,7 @@ function newPuzzle (size) {
         var grid = createGrid(size);
         var slots = findSlots(grid, size);
         if (isValid(grid, slots, size)) {
-            addWordNumbering(grid, slots, size);
+            addClueNumbers(grid, slots, size);
             break;
         } else if (numAttemptsToGenerate > 200) {
             break;
@@ -35,7 +35,7 @@ function createGrid (size) {
     for (rowIdx = 0; rowIdx < size; rowIdx++) {
         grid[rowIdx] = new Array(size);
         for (colIdx = 0; colIdx < size; colIdx++) {
-            grid[rowIdx][colIdx] = new Cell(rowIdx, colIdx, false, null, null);
+            grid[rowIdx][colIdx] = new Cell(rowIdx, colIdx, false, null);
         }
     }
 
@@ -76,15 +76,15 @@ function findSlots (grid, size) {
                 if (lastCellWasNonBlack) {
                     if (thisCellIsNonBlack) {
                         if (thisCellIsTerminal) { // push a slot ending here
-                            slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate] + 1, isAcross));
+                            slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate] + 1, isAcross, null, null));
                         }
                     } else { // push a slot ending in the previous cell
-                        slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate], isAcross));
+                        slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate], isAcross, null, null));
                     }
                 } else if (thisCellIsNonBlack) {
                     currentSlotStartCoord = [rowIdx, colIdx];
                     if (thisCellIsTerminal) { // this is a one-cell slot at the end of its strip
-                        slots.push(new Slot(currentSlotStartCoord, 1, isAcross));
+                        slots.push(new Slot(currentSlotStartCoord, 1, isAcross, null, null));
                     }
                 }
                 lastCellWasNonBlack = thisCellIsNonBlack;
@@ -172,22 +172,22 @@ function blackAndWhiteNotIntermixedEnough (grid, size) {
 
 }
 
-function addWordNumbering (grid, slots, size) {
+function addClueNumbers (grid, slots, size) {
 
-    var wordNumber = 1;
+    var clueNumber = 1;
     for (rowIdx = 0; rowIdx < size; rowIdx++) {
         for (colIdx = 0; colIdx < size; colIdx++) {
             var cell = grid[rowIdx][colIdx];
-            if (cell.number === null && aWordStartsAt(rowIdx, colIdx)) {
-                cell.number = wordNumber++;
+            var slotsStartingHere = slots.filter(function (slot) {
+                return _.isEqual(slot.startCoord, [rowIdx,colIdx]);
+            });
+            if (slotsStartingHere.length > 0) {
+                slotsStartingHere.forEach(function (slot) {
+                    slot.number = clueNumber;
+                });
+                clueNumber++;
             }
         }
-    }
-
-    function aWordStartsAt(rowIdx, colIdx) {
-        return slots.some(function(slot) {
-            return _.isEqual(slot.startCoord, [rowIdx,colIdx]);
-        });
     }
 
 }
