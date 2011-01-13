@@ -66,8 +66,8 @@ $(function() {
         });
     });
 
-    $('.clueNumber').live('hover', function (event) {
-        $('#'+$(event.target).data('gridCellId')).toggleClass('blue');
+    $('.clueContainer').live('hover', function (event) {
+        $('#'+$(event.currentTarget).data('gridCellId')).toggleClass('blue');
     });
 
     $('#spinner').live('click', function () {
