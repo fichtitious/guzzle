@@ -153,14 +153,12 @@ function doneWaiting () {
 
 function setUpKeyHandler () {
 
-    $('#puzzleContainer').live('mouseenter', function () {
-        $('#puzzleContainer').addClass('puzzleFocused');
-        $('.suspendedFocus').addClass('focused');
-        $('.suspendedFocus').removeClass('suspendedFocus');
-    }).live('mouseleave', function () {
-        $('#puzzleContainer').removeClass('puzzleFocused');
+    $('textarea').live('focus', function () {
         $('.focused').addClass('suspendedFocus');
         $('.focused').removeClass('focused');
+    }).live('blur', function () {
+        $('.suspendedFocus').addClass('focused');
+        $('.suspendedFocus').removeClass('suspendedFocus');
     });
 
     $('.gridCell').live('click', function (event) {
@@ -177,7 +175,7 @@ function setUpKeyHandler () {
     function handleKey (event) {
 
         var focused = findFocusedGridCell();
-        if (focused !== null && $('#puzzleContainer').hasClass('puzzleFocused')) {
+        if (focused !== null) {
 
             event.preventDefault();
 
