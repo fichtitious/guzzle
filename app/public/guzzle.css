@@ -11,8 +11,14 @@
 
 #cluesContainer {
     float: left;
-    -webkit-user-select:none;
-    -moz-user-select:none;
+}
+
+#clueText {
+    float: left;
+}
+
+#focusedClue {
+    font-weight: bold;
 }
 
 #acrossCluesContainer {
@@ -27,8 +33,6 @@
 
 #newPuzzleControls {
     float: right;
-    -webkit-user-select:none;
-    -moz-user-select:none;
 }
 
 #puzzleTitle {
@@ -38,6 +42,9 @@
 
 .saveLoad {
     float: right;
+}
+
+.noSelect {
     -webkit-user-select:none;
     -moz-user-select:none;
 }
@@ -47,8 +54,6 @@
     border-width: 0 1px 1px 0;
     float: left;
     text-align: center;
-    -webkit-user-select:none;
-    -moz-user-select:none;
 }
 
 .focused {

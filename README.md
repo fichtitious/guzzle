@@ -34,3 +34,7 @@ Todo
   * share methods across backend and frontend (indexOfCell(), etc.)
   * more words
   * let you solve someone else's puzzles
+  * cross-reference against a dictionary to classify words
+  * scoop all the words on wikipedia
+  * find old NYTimes puzzles
+  * hotkeys

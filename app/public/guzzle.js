@@ -74,6 +74,20 @@ $(function() {
         doneWaiting();
     });
 
+    $('.clueContainer').live('click', function () {
+        $('.clueContainer').attr('id', '');
+        $(this).attr('id', 'focusedClue');
+        $('#clueText').attr('disabled', '');
+        $('#clueText').text($(this).find('span.clue').text());
+        $('#clueText').focus();
+    });
+
+    $('#clueText').live('keyup', function () {
+        var clue = $('#focusedClue').find('span.clue');
+        var typed = $(this).val();
+        clue.text(typed).data('slot').clue = typed;
+    });
+
     setUpKeyHandler();
 
 });
@@ -243,7 +257,7 @@ function redrawPuzzle (puzzle) {
                 var gridCell = $('<div />',
                     { width : 39,
                       height : 39,
-                      class : 'gridCell',
+                      class : 'gridCell noSelect',
                       id : 'cell' + rowIdx + '-' + colIdx,
                       value : rowIdx + '-' + colIdx
                     }).appendTo(puzzleContainer);
@@ -308,12 +322,21 @@ function redrawPuzzle (puzzle) {
         $('#cluesContainer').remove();
         var cluesContainer = $('<div />',
           { id : 'cluesContainer',
+            class : 'noSelect'
           }).appendTo('body');
         return cluesContainer;
 
     }
 
     function redrawClues(cluesContainer) {
+
+        $('<textArea />',
+          { rows : 2,
+            cols : 20,
+            disabled : 'disabled',
+            id : 'clueText'
+          }).appendTo(cluesContainer);
+        $('<br />', {class : 'noSelect'}).appendTo(cluesContainer);
 
         puzzle.slots.sort(function (slotA, slotB) {
             return slotA.number > slotB.number ? 1 : -1;
@@ -327,12 +350,17 @@ function redrawPuzzle (puzzle) {
               }).appendTo(cluesContainer);
             puzzle.slots.forEach(function (slot) {
                 if (slot.isAcross == container.isAcross) {
-                    var clue = $('<div />').appendTo(subCluesContainer);
-                    $('<span />',
-                      { text : slot.number,
-                        class : 'clueNumber'
-                      }).appendTo(clue)
+                    var clue = $('<div />', {class : 'clueContainer'}).appendTo(subCluesContainer)
                         .data('gridCellId', 'cell' + slot.startCoord[0] + '-' + slot.startCoord[1]);
+                    $('<span />',
+                      { text : slot.number + ' ',
+                        class : 'clueNumber'
+                      }).appendTo(clue);
+                    $('<span />',
+                      { text : slot.clue,
+                        class : 'clue',
+                        id : 'clue' + slot.number + (slot.isAcross ? 'A' : 'D')
+                      }).appendTo(clue).data('slot', slot);
                 }
             });
         });
