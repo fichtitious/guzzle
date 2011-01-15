@@ -29,7 +29,7 @@ function Puzzle (json) {
         }
 
         this.slots = json.slots.map(function (slotJSON) {
-            return new Slot(slotJSON.startCoord, slotJSON.size, slotJSON.isAcross, slotJSON.number, slotJSON.clue);
+            return new Slot(slotJSON.startCoord, slotJSON.size, slotJSON.isAcross, slotJSON.number, slotJSON.clue, slotJSON.coords);
         });
 
     }
@@ -50,18 +50,21 @@ function Puzzle (json) {
 
 }
 
-function Slot (startCoord, size, isAcross, number, clue) {
+function Slot (startCoord, size, isAcross, number, clue, coords) {
 
     this.startCoord = startCoord;
     this.size = size;
     this.isAcross = isAcross;
     this.number = number;
     this.clue = clue;
+    this.coords = coords;
 
-    this.coords = [];
-    for (i = 0; i < this.size; i++) {
-        this.coords.push([this.startCoord[0] + (this.isAcross ? 0 : i),
-                          this.startCoord[1] + (this.isAcross ? i : 0)]);
+    if (coords === null) {
+        this.coords = [];
+        for (i = 0; i < this.size; i++) {
+            this.coords.push([this.startCoord[0] + (this.isAcross ? 0 : i),
+                              this.startCoord[1] + (this.isAcross ? i : 0)]);
+        }
     }
 
     this.indexOfCell = function (cell) {

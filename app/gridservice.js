@@ -76,15 +76,15 @@ function findSlots (grid, size) {
                 if (lastCellWasNonBlack) {
                     if (thisCellIsNonBlack) {
                         if (thisCellIsTerminal) { // push a slot ending here
-                            slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate] + 1, isAcross, null, null));
+                            slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate] + 1, isAcross, null, null, null));
                         }
                     } else { // push a slot ending in the previous cell
-                        slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate], isAcross, null, null));
+                        slots.push(new Slot(currentSlotStartCoord, movingIdx - currentSlotStartCoord[movingCoordinate], isAcross, null, null, null));
                     }
                 } else if (thisCellIsNonBlack) {
                     currentSlotStartCoord = [rowIdx, colIdx];
                     if (thisCellIsTerminal) { // this is a one-cell slot at the end of its strip
-                        slots.push(new Slot(currentSlotStartCoord, 1, isAcross, null, null));
+                        slots.push(new Slot(currentSlotStartCoord, 1, isAcross, null, null, null));
                     }
                 }
                 lastCellWasNonBlack = thisCellIsNonBlack;
